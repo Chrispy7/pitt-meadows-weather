@@ -3,10 +3,43 @@ const errorMessage = document.getElementById('error-message');
 const weatherMain = document.getElementById('weather-main');
 const loadingSpinner = document.getElementById('loading-spinner');
 
-// Pitt Meadows Data
-const PITT_LAT = 49.2238;
-const PITT_LON = -122.6893;
-const ELEVATION = 12;
+// State
+let currentUnit = 'C';
+let weatherDataCache = null;
+let displayHourlyCount = 12;
+
+function convertTemp(tempC) {
+    if (currentUnit === 'F') {
+        return (tempC * 9/5) + 32;
+    }
+    return tempC;
+}
+function setUnit(unit) {
+    if (currentUnit === unit) return;
+    currentUnit = unit;
+    
+    const btnC = document.getElementById('btn-celsius');
+    const btnF = document.getElementById('btn-fahrenheit');
+    if (btnC && btnF) {
+        if (unit === 'C') {
+            btnC.className = 'px-3 py-1 bg-white shadow-sm rounded-full text-xs font-bold text-primary transition-colors';
+            btnF.className = 'px-3 py-1 text-xs font-bold text-outline hover:text-primary transition-colors';
+        } else {
+            btnF.className = 'px-3 py-1 bg-white shadow-sm rounded-full text-xs font-bold text-primary transition-colors';
+            btnC.className = 'px-3 py-1 text-xs font-bold text-outline hover:text-primary transition-colors';
+        }
+    }
+    
+    if (weatherDataCache) {
+        updateWeatherCard(weatherDataCache);
+    }
+}
+
+// Current Location Data
+let currentLat = 49.2238;
+let currentLon = -122.6893;
+let currentElevation = 12;
+let currentCityName = "Pitt Meadows";
 
 // Open-Meteo WMO Weather codes (Mapped to Emojis)
 const weatherCodes = {
@@ -68,8 +101,8 @@ const getWindDirectionStr = (degrees) => {
 
 // Fetch Weather from Open-Meteo
 async function getWeather() {
-    const gemUrl = `https://api.open-meteo.com/v1/forecast?latitude=${PITT_LAT}&longitude=${PITT_LON}&elevation=${ELEVATION}&current=temperature_2m,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&models=gem_seamless&timezone=auto`;
-    const ecmwfUrl = `https://api.open-meteo.com/v1/forecast?latitude=${PITT_LAT}&longitude=${PITT_LON}&elevation=${ELEVATION}&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&models=ecmwf_ifs025&timezone=auto&forecast_days=10`;
+    const gemUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&models=gem_seamless&timezone=auto`;
+    const ecmwfUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&models=ecmwf_ifs025&timezone=auto&forecast_days=10`;
     
     const [gemRes, ecmwfRes] = await Promise.all([fetch(gemUrl), fetch(ecmwfUrl)]);
     
@@ -129,13 +162,13 @@ function renderMeteogram(gemData, ecmwfData) {
              labels.push('');
         }
         
-        temperatures.push(sourceData.hourly.temperature_2m[i]);
+        temperatures.push(convertTemp(sourceData.hourly.temperature_2m[i]));
         precipitations.push(sourceData.hourly.precipitation[i] || 0);
         
         const wCode = sourceData.hourly.weather_code ? sourceData.hourly.weather_code[i] : 0;
         const iconName = weatherCodes[wCode] ? weatherCodes[wCode].icon : 'help';
         
-        if (isMidnight || dateObj.getHours() === 12) {
+        if (dateObj.getHours() % 6 === 0) {
             icons.push(iconName);
         } else {
             icons.push(null);
@@ -153,7 +186,7 @@ function renderMeteogram(gemData, ecmwfData) {
             weatherIcons: icons,
             datasets: [
                 {
-                    label: 'Temperature (°C)',
+                    label: `Temperature (°${currentUnit})`,
                     data: temperatures,
                     borderColor: '#3b82f6', // blue-500
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -224,7 +257,7 @@ function renderMeteogram(gemData, ecmwfData) {
                     position: 'left',
                     title: {
                         display: true,
-                        text: 'Temperature (°C)',
+                        text: `Temperature (°${currentUnit})`,
                         font: { family: 'Manrope', size: 12 }
                     },
                     grid: {
@@ -285,11 +318,15 @@ function updateWeatherCard(data) {
     // --- Current Hero ---
     const currTempEl = document.getElementById(`current-temp`);
     if (currTempEl) {
-        currTempEl.textContent = `${Math.round(current.temperature_2m)}°`;
+        currTempEl.textContent = `${Math.round(convertTemp(current.temperature_2m))}°`;
+        const feelsLikeEl = document.getElementById('current-feels-like');
+        if (feelsLikeEl && current.apparent_temperature !== undefined) {
+            feelsLikeEl.textContent = `Feels like: ${Math.round(convertTemp(current.apparent_temperature))}°`;
+        }
         document.getElementById(`current-condition`).textContent = weatherInfo.condition;
         document.getElementById(`current-icon`).textContent = weatherInfo.icon;
         
-        document.getElementById(`current-range`).textContent = `H: ${Math.round(daily.temperature_2m_max[0])}° / L: ${Math.round(daily.temperature_2m_min[0])}°`;
+        document.getElementById(`current-range`).textContent = `H: ${Math.round(convertTemp(daily.temperature_2m_max[0]))}° / L: ${Math.round(convertTemp(daily.temperature_2m_min[0]))}°`;
         
         // Precip & Wind
         const precipProb = daily.precipitation_probability_max[0] || 0;
@@ -321,6 +358,10 @@ function updateWeatherCard(data) {
         hourlyContainer.innerHTML = '';
         
         // Find current hour index
+        const btnFull24h = document.getElementById('btn-full-24h');
+        if (btnFull24h) {
+            btnFull24h.style.display = displayHourlyCount >= 24 ? 'none' : 'flex';
+        }
         const now = new Date();
         // Open-Meteo returns time in ISO format for the timezone.
         let currentHourIdx = 0;
@@ -331,12 +372,12 @@ function updateWeatherCard(data) {
             }
         }
         
-        // Show next 8 hours
-        for (let i = currentHourIdx; i < currentHourIdx + 8; i++) {
+        // Show next 12 hours
+        for (let i = currentHourIdx; i < currentHourIdx + displayHourlyCount; i++) {
             if (i >= hourly.time.length) break;
             
             const dateStr = hourly.time[i];
-            const temp = Math.round(hourly.temperature_2m[i]);
+            const temp = Math.round(convertTemp(hourly.temperature_2m[i]));
             const hwCode = hourly.weather_code[i];
             const hwInfo = weatherCodes[hwCode] || defaultWeather;
             const isNow = i === currentHourIdx;
@@ -379,8 +420,8 @@ function updateWeatherCard(data) {
         for (let i = 0; i < totalDays; i++) {
             const sourceDaily = i < 3 ? daily : ecmwfDaily;
             if (i >= sourceDaily.time.length) continue;
-            const minT = Math.round(sourceDaily.temperature_2m_min[i]);
-            const maxT = Math.round(sourceDaily.temperature_2m_max[i]);
+            const minT = Math.round(convertTemp(sourceDaily.temperature_2m_min[i]));
+            const maxT = Math.round(convertTemp(sourceDaily.temperature_2m_max[i]));
             if (minT < absoluteMinTemp) absoluteMinTemp = minT;
             if (maxT > absoluteMaxTemp) absoluteMaxTemp = maxT;
         }
@@ -394,8 +435,8 @@ function updateWeatherCard(data) {
             if (i >= sourceDaily.time.length) continue;
 
             const dateStr = sourceDaily.time[i];
-            const maxTemp = Math.round(sourceDaily.temperature_2m_max[i]);
-            const minTemp = Math.round(sourceDaily.temperature_2m_min[i]);
+            const maxTemp = Math.round(convertTemp(sourceDaily.temperature_2m_max[i]));
+            const minTemp = Math.round(convertTemp(sourceDaily.temperature_2m_min[i]));
             const precipSum = sourceDaily.precipitation_sum[i] || 0;
             const dCode = sourceDaily.weather_code[i];
             const dInfo = weatherCodes[dCode] || defaultWeather;
@@ -452,6 +493,7 @@ async function initializeDashboard() {
         loadingSpinner.classList.remove('hidden');
 
         const data = await getWeather();
+        weatherDataCache = data;
         updateWeatherCard(data);
 
         loadingSpinner.classList.add('hidden');
@@ -464,4 +506,95 @@ async function initializeDashboard() {
 }
 
 // Load on startup
-document.addEventListener('DOMContentLoaded', initializeDashboard);
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btn-celsius')?.addEventListener('click', () => setUnit('C'));
+    document.getElementById('btn-fahrenheit')?.addEventListener('click', () => setUnit('F'));
+    document.getElementById('btn-full-24h')?.addEventListener('click', () => {
+        displayHourlyCount = 24;
+        if (weatherDataCache) {
+            updateWeatherCard(weatherDataCache);
+            const container = document.getElementById('hourly-forecast-container');
+            if (container) {
+                setTimeout(() => {
+                    container.scrollBy({ left: 300, behavior: 'smooth' });
+                }, 50);
+            }
+        }
+    });
+
+    document.getElementById('btn-radar-precip')?.addEventListener('click', function() {
+        const iframe = document.getElementById('radar-iframe');
+        if(iframe) {
+            iframe.src = `https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=radar&product=radar&level=surface&lat=${currentLat}&lon=${currentLon}`;
+        }
+        this.className = "px-4 py-2 bg-surface-container rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors";
+        const btnWind = document.getElementById('btn-radar-wind');
+        if(btnWind) btnWind.className = "px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors";
+    });
+
+    document.getElementById('btn-radar-wind')?.addEventListener('click', function() {
+        const iframe = document.getElementById('radar-iframe');
+        if(iframe) {
+            iframe.src = `https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=wind&product=radar&level=surface&lat=${currentLat}&lon=${currentLon}`;
+        }
+        this.className = "px-4 py-2 bg-surface-container rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors";
+        const btnPrecip = document.getElementById('btn-radar-precip');
+        if(btnPrecip) btnPrecip.className = "px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors";
+    });
+    
+    document.getElementById('city-search-btn')?.addEventListener('click', () => {
+        const input = document.getElementById('city-search-input');
+        if (input && input.value) {
+            searchCity(input.value);
+        }
+    });
+    
+    document.getElementById('city-search-input')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            searchCity(e.target.value);
+        }
+    });
+
+    initializeDashboard();
+});
+
+async function searchCity(cityName) {
+    if (!cityName) return;
+    try {
+        loadingSpinner.classList.remove('hidden');
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
+        const res = await fetch(geoUrl);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+            const city = data.results[0];
+            currentLat = city.latitude;
+            currentLon = city.longitude;
+            currentElevation = city.elevation || 10;
+            currentCityName = city.name;
+            
+            const cityNameEl = document.getElementById('city-name-header');
+            if (cityNameEl) cityNameEl.textContent = currentCityName;
+            
+            // update radar map URL
+            const iframe = document.getElementById('radar-iframe');
+            if(iframe) {
+                const src = iframe.src;
+                const newSrc = src.replace(/lat=[-\d.]+/, `lat=${currentLat}`).replace(/lon=[-\d.]+/, `lon=${currentLon}`);
+                iframe.src = newSrc;
+            }
+            
+            await initializeDashboard();
+            
+            // Clear input
+            const input = document.getElementById('city-search-input');
+            if (input) input.value = '';
+        } else {
+            alert("City not found.");
+            loadingSpinner.classList.add('hidden');
+        }
+    } catch(err) {
+        console.error(err);
+        alert("Error searching city.");
+        loadingSpinner.classList.add('hidden');
+    }
+}

@@ -112,80 +112,38 @@
     </style>
 </head>
 <body class="bg-background text-on-background font-body-md antialiased min-h-screen">
-<!-- SideNavBar Shell -->
-<aside class="fixed left-0 top-0 flex flex-col h-full p-4 space-y-2 bg-slate-50 dark:bg-slate-900 h-screen w-64 border-r border-slate-200 dark:border-slate-800 z-40">
-<div class="flex items-center gap-3 px-2 py-4 mb-4">
-<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<!-- Main Content Canvas -->
+<main id="weather-main" class="p-container-margin hidden mx-auto max-w-[1400px]">
+<!-- TopAppBar Context -->
+<header class="flex justify-between items-center w-full px-2 py-3 mb-stack-lg">
+<div class="flex items-center gap-8">
+<!-- SkyCast Pro Branding -->
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
 <span class="material-symbols-outlined">filter_drama</span>
 </div>
 <div>
-<h1 class="text-lg font-bold text-slate-900 dark:text-white leading-none">SkyCast Pro</h1>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white leading-none">SkyCast Pro</h1>
 <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">Station ID: 4829-NY</p>
 </div>
 </div>
-<nav class="flex-1 space-y-1">
-<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-lg shadow-sm font-semibold transition-all duration-200" href="#">
-<span class="material-symbols-outlined">cloud</span>
-<span class="font-['Manrope'] text-sm font-medium">Current Weather</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:translate-x-1 transition-all duration-200" href="#">
-<span class="material-symbols-outlined">satellite_alt</span>
-<span class="font-['Manrope'] text-sm font-medium">Interactive Radar</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:translate-x-1 transition-all duration-200" href="#">
-<span class="material-symbols-outlined">calendar_month</span>
-<span class="font-['Manrope'] text-sm font-medium">10-Day Forecast</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:translate-x-1 transition-all duration-200" href="#">
-<span class="material-symbols-outlined">warning</span>
-<span class="font-['Manrope'] text-sm font-medium">Severe Alerts</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:translate-x-1 transition-all duration-200" href="#">
-<span class="material-symbols-outlined">settings</span>
-<span class="font-['Manrope'] text-sm font-medium">Settings</span>
-</a>
-</nav>
-<div class="mt-auto space-y-4">
-<div class="p-4 bg-primary-fixed rounded-xl">
-<p class="text-xs font-bold text-on-primary-fixed mb-2">Upgrade to Premium</p>
-<p class="text-[11px] text-on-primary-fixed-variant leading-relaxed">Access high-resolution radar and hyper-local alerts.</p>
-</div>
-<div class="space-y-1">
-<a class="flex items-center gap-3 px-4 py-2 text-slate-500 text-xs font-medium hover:text-primary transition-colors" href="#">
-<span class="material-symbols-outlined text-sm">help</span>
-<span>Support</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-2 text-slate-500 text-xs font-medium hover:text-primary transition-colors" href="#">
-<span class="material-symbols-outlined text-sm">description</span>
-<span>Documentation</span>
-</a>
-</div>
-</div>
-</aside>
-<!-- Main Content Canvas -->
-<main id="weather-main" class="ml-64 p-container-margin hidden">
-<!-- TopAppBar Context -->
-<header class="flex justify-between items-center w-full px-2 py-3 mb-stack-lg">
-<div class="flex items-center gap-4">
+<div class="h-8 w-px bg-slate-200 hidden md:block"></div>
+<!-- Location & Model -->
+<div class="flex items-center gap-4 hidden md:flex">
 <div class="flex flex-col">
 <span class="font-label-caps text-label-caps text-secondary mb-1">ATMOSPHERIC PRECISION</span>
-<h2 class="font-headline-lg text-headline-lg text-on-surface">Pitt Meadows</h2>
-</div>
-<div class="px-3 py-1 bg-surface-container-highest rounded-full flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Canadian GEM Model</span>
+<h2 id="city-name-header" class="font-headline-lg text-headline-lg text-on-surface">Pitt Meadows</h2>
 </div>
 </div>
-<div class="flex items-center gap-stack-md">
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<input type="text" id="city-search-input" placeholder="Search city..." class="px-3 py-1.5 bg-surface-container rounded-lg text-sm font-medium border-none focus:ring-2 focus:ring-primary outline-none w-48 text-on-surface">
+<button id="city-search-btn" class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-container transition-colors">Go</button>
+</div>
 <div class="flex bg-surface-container rounded-full p-1">
-<button class="px-3 py-1 bg-white shadow-sm rounded-full text-xs font-bold text-primary">C°</button>
-<button class="px-3 py-1 text-xs font-bold text-outline">F°</button>
-</div>
-<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-container-high">
-<img alt="User profile" data-alt="professional male headshot with neutral background, soft studio lighting, high quality photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhAyd95zSFpt3xPbwanaZ2alPA5wSa5XMxcN7ZVWjNAE7rahAmq7AToKn1vHEDw90k78KJqJs6y7ocCfDcZzfQX7oJtyCwvz6rKC2K9lGTJRthT-mmX9VQoGwQT_xMc4a1mm5qnKCfUQK9nCRCu5O1npXjefWHdX7T5NiyQaJFfyQS1XiSgJJdbkF3aYL0dT6p81Du5dIoiiClMBJmObjQ6mFUNi1iVwkOMsA6X8-KuODMefzrmfpCNXZzkwGOelyK6tM55XOgPoyY"/>
+<button id="btn-celsius" class="px-3 py-1 bg-white shadow-sm rounded-full text-xs font-bold text-primary transition-colors">C°</button>
+<button id="btn-fahrenheit" class="px-3 py-1 text-xs font-bold text-outline hover:text-primary transition-colors">F°</button>
 </div>
 </div>
 </header>
@@ -207,6 +165,7 @@
 <div class="flex items-baseline gap-4 mt-8">
 <span id="current-temp" class="font-display-temp text-display-temp">--°</span>
 <span id="current-icon" class="text-[64px] leading-none drop-shadow-md">❓</span>
+<span id="current-feels-like" class="text-xl font-medium opacity-80 self-end mb-4 ml-2">Feels like: --°</span>
 </div>
 <div class="mt-8 flex gap-stack-lg">
 <div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
@@ -274,7 +233,7 @@
 <section class="mb-section-gap">
 <div class="flex items-center justify-between mb-stack-lg">
 <h3 class="font-headline-md text-headline-md text-on-surface">Hourly Forecast</h3>
-<button class="text-primary font-bold text-xs flex items-center gap-1 hover:underline">
+<button id="btn-full-24h" class="text-primary font-bold text-xs flex items-center gap-1 hover:underline">
                     FULL 24H <span class="material-symbols-outlined text-sm">arrow_forward</span>
 </button>
 </div>
@@ -311,12 +270,12 @@
 <h3 class="font-headline-md text-headline-md text-on-surface">Live Radar Map</h3>
 </div>
 <div class="flex gap-2">
-<button class="px-4 py-2 bg-surface-container rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">Precipitation</button>
-<button class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors">Wind Speed</button>
+<button id="btn-radar-precip" class="px-4 py-2 bg-surface-container rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">Precipitation</button>
+<button id="btn-radar-wind" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors">Wind Speed</button>
 </div>
 </div>
 <div class="flex-1 min-h-[400px] relative">
-<iframe width="100%" height="400" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=radar&product=radar&level=surface&lat=49.2238&lon=-122.6893" frameborder="0" class="w-full h-full absolute inset-0"></iframe>
+<iframe id="radar-iframe" width="100%" height="400" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=radar&product=radar&level=surface&lat=49.2238&lon=-122.6893" frameborder="0" class="w-full h-full absolute inset-0"></iframe>
 </div>
 </div>
 <!-- Detail Metrics -->
@@ -353,7 +312,7 @@
 <h4 class="font-headline-md text-lg">Weather Alert</h4>
 </div>
 <p class="text-sm leading-relaxed opacity-90 mb-4">No severe alerts in Pitt Meadows for the next 48 hours. Sky conditions are stable for outdoor activities.</p>
-<button class="w-full py-3 bg-white/20 hover:bg-white/30 transition-colors rounded-xl text-xs font-bold uppercase tracking-widest">View Local Report</button>
+<button onclick="window.open('https://weather.gc.ca/city/pages/bc-74_metric_e.html', '_blank')" class="w-full py-3 bg-white/20 hover:bg-white/30 transition-colors rounded-xl text-xs font-bold uppercase tracking-widest">View Local Report</button>
 </div>
 </div>
 </section>
