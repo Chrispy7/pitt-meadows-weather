@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Icon Options Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Manrope', sans-serif; }
+        .emoji-icon { font-size: 64px; line-height: 1; }
+        .svg-icon { width: 80px; height: 80px; }
+    </style>
+</head>
+<body class="bg-slate-100 p-10 min-h-screen">
+    
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-10 text-slate-800">Weather Icon Options</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- Option 1: Native Emojis -->
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 flex flex-col items-center">
+                <h2 class="text-xl font-bold mb-2">Option 1</h2>
+                <p class="text-sm text-slate-500 mb-8 text-center">Native System Emojis</p>
+                
+                <div class="space-y-6 w-full">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <span class="font-semibold text-slate-700">Clear</span>
+                        <span class="emoji-icon">☀️</span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <span class="font-semibold text-slate-700">Partly Cloudy</span>
+                        <span class="emoji-icon">⛅</span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <span class="font-semibold text-slate-700">Rain</span>
+                        <span class="emoji-icon">🌧️</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 2: Static PNGs (OpenWeatherMap) -->
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 flex flex-col items-center">
+                <h2 class="text-xl font-bold mb-2">Option 2</h2>
+                <p class="text-sm text-slate-500 mb-8 text-center">Static PNG Images (OpenWeather)</p>
+                
+                <div class="space-y-6 w-full">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <span class="font-semibold text-slate-700">Clear</span>
+                        <img src="https://openweathermap.org/img/wn/01d@4x.png" class="svg-icon object-contain" alt="Clear">
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <span class="font-semibold text-slate-700">Partly Cloudy</span>
+                        <img src="https://openweathermap.org/img/wn/02d@4x.png" class="svg-icon object-contain" alt="Cloudy">
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <span class="font-semibold text-slate-700">Rain</span>
+                        <img src="https://openweathermap.org/img/wn/10d@4x.png" class="svg-icon object-contain" alt="Rain">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 3: Animated SVGs (Meteocons) -->
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 flex flex-col items-center">
+                <h2 class="text-xl font-bold mb-2">Option 3</h2>
+                <p class="text-sm text-slate-500 mb-8 text-center">Animated SVGs (Meteocons)</p>
+                
+                <div class="space-y-6 w-full">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <span class="font-semibold text-slate-700">Clear</span>
+                        <img src="https://cdn.jsdelivr.net/npm/@basmilius/weather-icons/production/fill/all/clear-day.svg" class="svg-icon" alt="Clear">
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <span class="font-semibold text-slate-700">Partly Cloudy</span>
+                        <img src="https://cdn.jsdelivr.net/npm/@basmilius/weather-icons/production/fill/all/partly-cloudy-day.svg" class="svg-icon" alt="Cloudy">
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <span class="font-semibold text-slate-700">Rain</span>
+                        <img src="https://cdn.jsdelivr.net/npm/@basmilius/weather-icons/production/fill/all/rain.svg" class="svg-icon" alt="Rain">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

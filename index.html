@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary": "#1c648e",
+                      "surface-container-high": "#dde9ff",
+                      "on-secondary": "#ffffff",
+                      "surface": "#f8f9ff",
+                      "primary-fixed-dim": "#adc6ff",
+                      "on-tertiary-container": "#fbfcff",
+                      "secondary-fixed-dim": "#90cdfd",
+                      "surface-container-low": "#eff4ff",
+                      "on-secondary-fixed": "#001e30",
+                      "outline-variant": "#c1c6d7",
+                      "on-primary-container": "#fefcff",
+                      "inverse-surface": "#253141",
+                      "surface-tint": "#005bc1",
+                      "on-surface-variant": "#414755",
+                      "on-error-container": "#93000a",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#c4c7ca",
+                      "on-surface": "#101c2c",
+                      "inverse-on-surface": "#eaf1ff",
+                      "surface-variant": "#d7e3f9",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#adc6ff",
+                      "surface-dim": "#cedbf0",
+                      "tertiary": "#595c5f",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#d8e2ff",
+                      "on-secondary-fixed-variant": "#004b70",
+                      "background": "#f8f9ff",
+                      "on-primary-fixed": "#001a41",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#e6eeff",
+                      "primary-container": "#0070eb",
+                      "on-tertiary-fixed": "#191c1e",
+                      "surface-bright": "#f8f9ff",
+                      "on-primary": "#ffffff",
+                      "surface-container-highest": "#d7e3f9",
+                      "primary": "#0058bc",
+                      "tertiary-container": "#727578",
+                      "outline": "#717786",
+                      "on-secondary-container": "#025881",
+                      "on-tertiary-fixed-variant": "#44474a",
+                      "error": "#ba1a1a",
+                      "secondary-fixed": "#cae6ff",
+                      "on-background": "#101c2c",
+                      "secondary-container": "#90cdfd",
+                      "on-primary-fixed-variant": "#004493",
+                      "tertiary-fixed": "#e0e3e6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "container-margin": "24px",
+                      "gutter": "16px",
+                      "section-gap": "40px",
+                      "stack-sm": "4px",
+                      "stack-md": "12px",
+                      "stack-lg": "24px"
+              },
+              "fontFamily": {
+                      "display-temp": ["Manrope"],
+                      "headline-md": ["Manrope"],
+                      "label-caps": ["Manrope"],
+                      "body-md": ["Manrope"],
+                      "data-tabular": ["Manrope"],
+                      "headline-lg": ["Manrope"],
+                      "body-lg": ["Manrope"]
+              },
+              "fontSize": {
+                      "display-temp": ["84px", {"lineHeight": "90px", "letterSpacing": "-0.04em", "fontWeight": "200"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "data-tabular": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 flex flex-col h-full p-4 space-y-2 bg-slate-50 dark:bg-slate-900 h-screen w-64 border-r border-slate-200 dark:border-slate-800 z-40">
+<div class="flex items-center gap-3 px-2 py-4 mb-4">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">filter_drama</span>
+</div>
+<div>
+<h1 class="text-lg font-bold text-slate-900 dark:text-white leading-none">SkyCast Pro</h1>
+<p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">Station ID: 4829-NY</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-lg shadow-sm font-semibold transition-all duration-200" href="#">
+<span class="material-symbols-outlined">cloud</span>
+<span class="font-['Manrope'] text-sm font-medium">Current Weather</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">satellite_alt</span>
+<span class="font-['Manrope'] text-sm font-medium">Interactive Radar</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="font-['Manrope'] text-sm font-medium">10-Day Forecast</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">warning</span>
+<span class="font-['Manrope'] text-sm font-medium">Severe Alerts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Manrope'] text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4">
+<div class="p-4 bg-primary-fixed rounded-xl">
+<p class="text-xs font-bold text-on-primary-fixed mb-2">Upgrade to Premium</p>
+<p class="text-[11px] text-on-primary-fixed-variant leading-relaxed">Access high-resolution radar and hyper-local alerts.</p>
+</div>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 text-xs font-medium hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 text-xs font-medium hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">description</span>
+<span>Documentation</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main id="weather-main" class="ml-64 p-container-margin hidden">
+<!-- TopAppBar Context -->
+<header class="flex justify-between items-center w-full px-2 py-3 mb-stack-lg">
+<div class="flex items-center gap-4">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-secondary mb-1">ATMOSPHERIC PRECISION</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Pitt Meadows</h2>
+</div>
+<div class="px-3 py-1 bg-surface-container-highest rounded-full flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Canadian GEM Model</span>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="flex bg-surface-container rounded-full p-1">
+<button class="px-3 py-1 bg-white shadow-sm rounded-full text-xs font-bold text-primary">C°</button>
+<button class="px-3 py-1 text-xs font-bold text-outline">F°</button>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-container-high">
+<img alt="User profile" data-alt="professional male headshot with neutral background, soft studio lighting, high quality photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhAyd95zSFpt3xPbwanaZ2alPA5wSa5XMxcN7ZVWjNAE7rahAmq7AToKn1vHEDw90k78KJqJs6y7ocCfDcZzfQX7oJtyCwvz6rKC2K9lGTJRthT-mmX9VQoGwQT_xMc4a1mm5qnKCfUQK9nCRCu5O1npXjefWHdX7T5NiyQaJFfyQS1XiSgJJdbkF3aYL0dT6p81Du5dIoiiClMBJmObjQ6mFUNi1iVwkOMsA6X8-KuODMefzrmfpCNXZzkwGOelyK6tM55XOgPoyY"/>
+</div>
+</div>
+</header>
+<!-- Hero Section -->
+<section class="grid grid-cols-12 gap-gutter mb-section-gap">
+<!-- Current Hero Card -->
+<div class="col-span-12 lg:col-span-8 bg-gradient-to-br from-primary-container to-primary p-10 rounded-[2rem] relative overflow-hidden text-white">
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-caps text-label-caps opacity-80 mb-2">CURRENT CONDITIONS</p>
+<h3 id="current-condition" class="font-headline-md text-headline-md">--</h3>
+</div>
+<div class="text-right">
+<p class="font-label-caps text-label-caps opacity-80 mb-1">TODAY'S RANGE</p>
+<p id="current-range" class="font-data-tabular text-data-tabular">H: --° / L: --°</p>
+</div>
+</div>
+<div class="flex items-baseline gap-4 mt-8">
+<span id="current-temp" class="font-display-temp text-display-temp">--°</span>
+<span id="current-icon" class="text-[64px] leading-none drop-shadow-md">❓</span>
+</div>
+<div class="mt-8 flex gap-stack-lg">
+<div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
+<span class="material-symbols-outlined text-sm">water_drop</span>
+<span id="current-precip" class="text-xs font-semibold">Precip: --%</span>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
+<span class="material-symbols-outlined text-sm">air</span>
+<span id="current-wind" class="text-xs font-semibold">Wind: --km/h</span>
+</div>
+</div>
+</div>
+<!-- Decorative element -->
+<div class="absolute right-[-5%] bottom-[-10%] opacity-20 transform scale-150">
+<span class="material-symbols-outlined text-[300px]">cloud_queue</span>
+</div>
+</div>
+<!-- Stats Grid Mini -->
+<div class="col-span-12 lg:col-span-4 grid grid-cols-2 gap-gutter">
+<div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="material-symbols-outlined">device_thermostat</span>
+<span class="font-label-caps text-[10px]">HUMIDITY</span>
+</div>
+<div>
+<p id="stat-humidity" class="font-headline-md text-headline-md text-on-surface">--%</p>
+<div class="w-full bg-outline-variant h-1 rounded-full mt-2 overflow-hidden">
+<div id="stat-humidity-bar" class="bg-primary h-full w-[0%]"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="material-symbols-outlined">light_mode</span>
+<span class="font-label-caps text-[10px]">UV INDEX</span>
+</div>
+<div>
+<p id="stat-uv" class="font-headline-md text-headline-md text-on-surface">--</p>
+<p class="text-[10px] font-bold text-secondary mt-1">MODERATE</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="material-symbols-outlined">visibility</span>
+<span class="font-label-caps text-[10px]">VISIBILITY</span>
+</div>
+<div>
+<p id="stat-visibility" class="font-headline-md text-headline-md text-on-surface">-- km</p>
+<p class="text-[10px] font-bold text-on-surface-variant mt-1">CLEAR SKY</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="material-symbols-outlined">compress</span>
+<span class="font-label-caps text-[10px]">PRESSURE</span>
+</div>
+<div>
+<p id="stat-pressure" class="font-headline-md text-headline-md text-on-surface">--</p>
+<p class="text-[10px] font-bold text-on-surface-variant mt-1">KPA (STEADY)</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Hourly Forecast -->
+<section class="mb-section-gap">
+<div class="flex items-center justify-between mb-stack-lg">
+<h3 class="font-headline-md text-headline-md text-on-surface">Hourly Forecast</h3>
+<button class="text-primary font-bold text-xs flex items-center gap-1 hover:underline">
+                    FULL 24H <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div id="hourly-forecast-container" class="flex gap-gutter overflow-x-auto pb-4 scrollbar-hide">
+<!-- Dynamic Hourly Forecast -->
+</div>
+</section>
+
+<!-- 10-Day Forecast -->
+<section class="mb-section-gap">
+<div class="flex items-center justify-between mb-stack-lg">
+<h3 class="font-headline-md text-headline-md text-on-surface">10-Day Forecast</h3>
+<div class="px-3 py-1 bg-surface-container-highest rounded-full flex items-center gap-2">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">GEM (Days 1-3) + ECMWF (Days 4-10)</span>
+</div>
+</div>
+<div class="bg-white border border-slate-100 rounded-3xl p-6 mb-6">
+<canvas id="meteogram-chart" width="100%" height="250"></canvas>
+</div>
+<div id="ten-day-forecast-container" class="flex gap-gutter overflow-x-auto pb-4 scrollbar-hide">
+<!-- Dynamic 10-Day Forecast Rows -->
+</div>
+</section>
+
+<!-- Radar & Metrics Grid -->
+<section class="grid grid-cols-12 gap-gutter">
+<!-- Radar Map -->
+<div class="col-span-12 lg:col-span-8 bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col">
+<div class="p-6 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">satellite_alt</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Live Radar Map</h3>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-surface-container rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">Precipitation</button>
+<button class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors">Wind Speed</button>
+</div>
+</div>
+<div class="flex-1 min-h-[400px] relative">
+<iframe width="100%" height="400" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=radar&product=radar&level=surface&lat=49.2238&lon=-122.6893" frameborder="0" class="w-full h-full absolute inset-0"></iframe>
+</div>
+</div>
+<!-- Detail Metrics -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
+<div class="bg-white border border-slate-100 p-6 rounded-3xl flex-1">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary">air</span>
+<h4 class="font-headline-md text-lg">Wind Conditions</h4>
+</div>
+<div class="flex items-center justify-between mb-8">
+<div>
+<p class="text-4xl font-bold text-on-surface"><span id="detail-wind-speed">--</span> <span class="text-lg font-medium text-slate-400">km/h</span></p>
+<p id="detail-wind-desc" class="text-xs font-bold text-secondary mt-1 uppercase tracking-widest">--</p>
+</div>
+<div class="w-16 h-16 rounded-full border-4 border-slate-50 flex items-center justify-center relative">
+<span id="detail-wind-icon" class="material-symbols-outlined text-3xl text-primary rotate-[0deg] transition-transform duration-500">navigation</span>
+<span id="detail-wind-dir-label" class="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">--</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center py-3 border-t border-slate-50">
+<span class="text-sm text-slate-500">Gusts</span>
+<span id="detail-wind-gusts" class="text-sm font-bold">-- km/h</span>
+</div>
+<div class="flex justify-between items-center py-3 border-t border-slate-50">
+<span class="text-sm text-slate-500">Direction</span>
+<span id="detail-wind-direction" class="text-sm font-bold">--</span>
+</div>
+</div>
+</div>
+<div class="bg-gradient-to-br from-secondary to-secondary-fixed-dim p-6 rounded-3xl text-white">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined">info</span>
+<h4 class="font-headline-md text-lg">Weather Alert</h4>
+</div>
+<p class="text-sm leading-relaxed opacity-90 mb-4">No severe alerts in Pitt Meadows for the next 48 hours. Sky conditions are stable for outdoor activities.</p>
+<button class="w-full py-3 bg-white/20 hover:bg-white/30 transition-colors rounded-xl text-xs font-bold uppercase tracking-widest">View Local Report</button>
+</div>
+</div>
+</section>
+</main>
+
+<!-- Loading Spinner -->
+<div id="loading-spinner" class="fixed inset-0 bg-white/80 dark:bg-slate-900/80 z-50 flex flex-col items-center justify-center">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-primary border-solid"></div>
+    <p class="mt-4 font-bold text-primary">Fetching GEM Data...</p>
+</div>
+<!-- Error Message -->
+<div id="error-message" class="hidden fixed top-4 right-4 bg-error text-on-error p-4 rounded-xl shadow-lg z-50">
+    Failed to load weather data. Please try again.
+</div>
+<script src="script.js"></script>
+</body>
+</html>
