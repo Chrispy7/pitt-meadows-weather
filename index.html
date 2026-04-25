@@ -168,7 +168,7 @@
 <span id="current-icon" class="text-[64px] leading-none drop-shadow-md">❓</span>
 <span id="current-feels-like" class="text-xl font-medium opacity-80 self-end mb-4 ml-2">Feels like: --°</span>
 </div>
-<div class="mt-8 flex gap-stack-lg">
+<div class="mt-8 flex gap-stack-lg flex-wrap">
 <div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
 <span class="material-symbols-outlined text-sm">water_drop</span>
 <span id="current-precip" class="text-xs font-semibold">Precip: --%</span>
@@ -177,6 +177,10 @@
 <span class="material-symbols-outlined text-sm">air</span>
 <span id="current-wind" class="text-xs font-semibold">Wind: --km/h</span>
 </div>
+<button id="current-warning-btn" class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl transition-colors cursor-default">
+<span class="material-symbols-outlined text-sm">info</span>
+<span id="current-warning-text" class="text-xs font-semibold">No warnings</span>
+</button>
 </div>
 </div>
 <!-- Decorative element -->
@@ -232,43 +236,39 @@
 </section>
 <!-- Hourly Forecast -->
 <section class="mb-section-gap">
-<div class="flex items-center justify-between mb-stack-lg">
+<div class="bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col p-6">
+<div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
 <h3 class="font-headline-md text-headline-md text-on-surface">Hourly Forecast</h3>
 <button id="btn-full-24h" class="text-primary font-bold text-xs flex items-center gap-1 hover:underline">
                     FULL 24H <span class="material-symbols-outlined text-sm">arrow_forward</span>
 </button>
 </div>
-<div id="hourly-forecast-container" class="flex gap-gutter overflow-x-auto pb-4 scrollbar-hide">
+<div id="hourly-forecast-container" class="flex gap-gutter overflow-x-auto pb-2 scrollbar-hide">
 <!-- Dynamic Hourly Forecast -->
+</div>
 </div>
 </section>
 
 <!-- 10-Day Forecast -->
 <section class="mb-section-gap">
-<div class="flex items-center justify-between mb-stack-lg">
-<h3 class="font-headline-md text-headline-md text-on-surface">10-Day Forecast</h3>
+<div class="bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col p-6">
+<div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+<h3 class="font-headline-md text-headline-md text-on-surface">10-Day Weather Meteogram</h3>
 <div class="px-3 py-1 bg-surface-container-highest rounded-full flex items-center gap-2">
 <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">GEM (Days 1-3) + ECMWF (Days 4-10)</span>
 </div>
 </div>
-<div class="bg-white border border-slate-100 rounded-3xl p-6 mb-6">
-<canvas id="meteogram-chart" width="100%" height="250"></canvas>
-</div>
-<div class="bg-white border border-slate-100 rounded-3xl overflow-hidden">
-<div class="px-5 py-3 border-b border-slate-100">
-<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">10-DAY WEATHER FORECAST</span>
-</div>
-<div id="ten-day-forecast-container" class="flex flex-col pb-2">
-<!-- Dynamic 10-Day Forecast Rows -->
+<div class="flex-1 min-h-[300px] relative">
+<canvas id="meteogram-chart" width="100%" height="100%" class="absolute inset-0"></canvas>
 </div>
 </div>
 </section>
 
-<!-- Radar & Metrics Grid -->
+<!-- Radar & 10-Day Forecast Grid -->
 <section class="grid grid-cols-12 gap-gutter">
 <!-- Radar Map -->
-<div class="col-span-12 lg:col-span-8 bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col">
-<div class="p-6 flex items-center justify-between">
+<div class="col-span-12 lg:col-span-7 bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col">
+<div class="p-6 flex items-center justify-between border-b border-slate-100">
 <div class="flex items-center gap-3">
 <div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
 <span class="material-symbols-outlined">satellite_alt</span>
@@ -284,44 +284,36 @@
 <iframe id="radar-iframe" width="100%" height="400" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=radar&product=radar&level=surface&lat=49.2238&lon=-122.6893" frameborder="0" class="w-full h-full absolute inset-0"></iframe>
 </div>
 </div>
-<!-- Detail Metrics -->
-<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
-<div class="bg-white border border-slate-100 p-6 rounded-3xl flex-1">
-<div class="flex items-center gap-3 mb-6">
-<span class="material-symbols-outlined text-primary">air</span>
-<h4 class="font-headline-md text-lg">Wind Conditions</h4>
+
+<!-- 10-Day Forecast List -->
+<div class="col-span-12 lg:col-span-5 flex flex-col bg-white border border-slate-100 rounded-3xl overflow-hidden">
+<div class="p-6 flex items-center justify-between border-b border-slate-100">
+<h3 class="font-headline-md text-headline-md text-on-surface">10-Day Weather Forecast</h3>
 </div>
-<div class="flex items-center justify-between mb-8">
-<div>
-<p class="text-4xl font-bold text-on-surface"><span id="detail-wind-speed">--</span> <span class="text-lg font-medium text-slate-400">km/h</span></p>
-<p id="detail-wind-desc" class="text-xs font-bold text-secondary mt-1 uppercase tracking-widest">--</p>
-</div>
-<div class="w-16 h-16 rounded-full border-4 border-slate-50 flex items-center justify-center relative">
-<span id="detail-wind-icon" class="material-symbols-outlined text-3xl text-primary rotate-[0deg] transition-transform duration-500">navigation</span>
-<span id="detail-wind-dir-label" class="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400">--</span>
-</div>
-</div>
-<div class="space-y-4">
-<div class="flex justify-between items-center py-3 border-t border-slate-50">
-<span class="text-sm text-slate-500">Gusts</span>
-<span id="detail-wind-gusts" class="text-sm font-bold">-- km/h</span>
-</div>
-<div class="flex justify-between items-center py-3 border-t border-slate-50">
-<span class="text-sm text-slate-500">Direction</span>
-<span id="detail-wind-direction" class="text-sm font-bold">--</span>
+<div class="flex-1 flex flex-col">
+<div id="ten-day-forecast-container" class="flex flex-col pb-2">
+<!-- Dynamic 10-Day Forecast Rows -->
 </div>
 </div>
 </div>
-<div class="bg-gradient-to-br from-secondary to-secondary-fixed-dim p-6 rounded-3xl text-white">
-<div class="flex items-center gap-3 mb-4">
-<span class="material-symbols-outlined">info</span>
-<h4 class="font-headline-md text-lg">Weather Alert</h4>
-</div>
-<p class="text-sm leading-relaxed opacity-90 mb-4">No severe alerts in Pitt Meadows for the next 48 hours. Sky conditions are stable for outdoor activities.</p>
-<button onclick="window.open('https://weather.gc.ca/city/pages/bc-74_metric_e.html', '_blank')" class="w-full py-3 bg-white/20 hover:bg-white/30 transition-colors rounded-xl text-xs font-bold uppercase tracking-widest">View Local Report</button>
-</div>
-</div>
+
 </section>
+
+<!-- Footer -->
+<footer class="mt-4 text-center text-xs text-slate-400">
+<div class="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white border border-slate-100 rounded-3xl">
+<div class="font-medium text-slate-500">
+&copy; 2026 Chris Schwarz. All Rights Reserved.
+</div>
+<div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-medium">
+<a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+<a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+<a href="#" class="hover:text-primary transition-colors">Cookie Policy</a>
+<span class="cursor-help hover:text-primary transition-colors" title="Data provided by Open-Meteo (GEM & ECMWF models). Radar by Windy.">Data Sources</span>
+</div>
+</div>
+</footer>
+
 </main>
 
 <!-- Loading Spinner -->

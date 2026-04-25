@@ -3,10 +3,21 @@ const errorMessage = document.getElementById('error-message');
 const weatherMain = document.getElementById('weather-main');
 const loadingSpinner = document.getElementById('loading-spinner');
 
+function calculateDisplayHourlyCount() {
+    // Each hourly card is approx 120px + 16px gap = 136px.
+    // Subtract some padding for container margins (approx 48px).
+    const availableWidth = window.innerWidth - 48;
+    let count = Math.floor(availableWidth / 136);
+    // Ensure we show at least 4 hours and at most 24
+    if (count < 4) count = 4;
+    if (count > 24) count = 24;
+    return count;
+}
+
 // State
 let currentUnit = 'C';
 let weatherDataCache = null;
-let displayHourlyCount = 12;
+let displayHourlyCount = calculateDisplayHourlyCount();
 let searchTimeout = null;
 
 let userLat = null;
@@ -84,6 +95,33 @@ const weatherCodes = {
     95: { condition: 'Thunderstorm', icon: '⛈️' },
     96: { condition: 'Thunderstorm with slight hail', icon: '⛈️' },
     99: { condition: 'Thunderstorm with heavy hail', icon: '⛈️' }
+};
+
+const funWeatherDescriptions = {
+    0: 'Not a cloud in sight!',
+    1: 'Mostly sunny & sweet',
+    2: 'A little cloudy, still nice',
+    3: 'Grey skies today',
+    45: 'Foggy & mysterious',
+    48: 'Chilly, frosty fog',
+    51: 'Just a light sprinkle',
+    53: 'Steady drizzle',
+    55: 'Heavy drizzle, grab a coat',
+    61: 'A little rain coming down',
+    63: 'Classic rainy day',
+    65: 'Pouring buckets out there!',
+    71: 'A magical light snow',
+    73: 'Snowing pretty good!',
+    75: 'Heavy snow! Snowball fight?',
+    77: 'Tiny snow grains falling',
+    80: 'Passing rain showers',
+    81: 'Showers on and off',
+    82: 'Intense rain showers!',
+    85: 'Quick flurry of snow',
+    86: 'Heavy snow showers',
+    95: 'Thunder & lightning!',
+    96: 'Thunderstorm with a bit of hail',
+    99: 'Wild storm with heavy hail!'
 };
 
 const defaultWeather = { condition: 'Unknown', icon: '❓' };
@@ -363,6 +401,22 @@ function updateWeatherCard(data) {
         const precipProb = daily.precipitation_probability_max ? (daily.precipitation_probability_max[0] || 0) : 0;
         document.getElementById('current-precip').textContent = `Precip: ${precipProb}%`;
         document.getElementById('current-wind').textContent = `Wind: ${Math.round(current.wind_speed_10m)}km/h ${getWindDirectionStr(current.wind_direction_10m)}`;
+        
+        // Weather Warning
+        const warningBtn = document.getElementById('current-warning-btn');
+        const warningText = document.getElementById('current-warning-text');
+        if (warningBtn && warningText) {
+            const isSevere = wCode === 82 || wCode === 86 || wCode >= 95 || current.wind_speed_10m > 40;
+            if (isSevere) {
+                warningBtn.className = 'flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-xl shadow-md transition-colors hover:bg-orange-600 cursor-pointer';
+                warningText.textContent = 'Weather Warning';
+                warningBtn.onclick = () => window.open('https://weather.gc.ca/city/pages/bc-74_metric_e.html', '_blank');
+            } else {
+                warningBtn.className = 'flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl transition-colors cursor-default';
+                warningText.textContent = 'No warnings';
+                warningBtn.onclick = null;
+            }
+        }
     }
 
     // --- Stats Grid Mini ---
@@ -458,13 +512,30 @@ function updateWeatherCard(data) {
             const precipProb = sourceDaily.precipitation_probability_max ? (sourceDaily.precipitation_probability_max[i] || 0) : 0;
             const dCode = sourceDaily.weather_code[i];
             const dInfo = weatherCodes[dCode] || defaultWeather;
+            const funCondition = funWeatherDescriptions[dCode] || dInfo.condition;
             
             const isToday = i === 0;
             const { day: shortDay, date: shortDate } = getShortDayDate(dateStr);
 
-            // Night uses the next day's weather code as an approximation (or overcast/clear)
-            // For simplicity we show a moon + "Night" condition label
-            const nightCodes = { condition: 'Mainly clear', icon: '🌙' };
+            // Night uses the next day's 2 AM weather code as an approximation
+            let nightCode = dCode; // Fallback
+            const sourceHourly = isGem ? hourly : ecmwfData.hourly;
+            if (sourceHourly && sourceHourly.time) {
+                const [y, m, d] = dateStr.split('-');
+                const nextDay = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+                nextDay.setDate(nextDay.getDate() + 1);
+                
+                const ny = nextDay.getFullYear();
+                const nm = String(nextDay.getMonth() + 1).padStart(2, '0');
+                const nd = String(nextDay.getDate()).padStart(2, '0');
+                const targetTime = `${ny}-${nm}-${nd}T02:00`;
+                
+                const hourlyIndex = sourceHourly.time.indexOf(targetTime);
+                if (hourlyIndex !== -1 && sourceHourly.weather_code[hourlyIndex] !== undefined) {
+                    nightCode = sourceHourly.weather_code[hourlyIndex];
+                }
+            }
+            const funNightCondition = funWeatherDescriptions[nightCode] || (weatherCodes[nightCode] ? weatherCodes[nightCode].condition : 'Starry night');
 
             const rowEl = document.createElement('div');
             const borderClass = i < totalDays - 1 ? 'border-b border-slate-100' : '';
@@ -491,8 +562,8 @@ function updateWeatherCard(data) {
                 </div>
                 <!-- Conditions (Day + Night) -->
                 <div class="flex flex-col flex-1 min-w-0">
-                    <span class="text-sm font-semibold text-slate-700 truncate">${dInfo.condition}</span>
-                    <span class="flex items-center gap-1 text-xs text-slate-400 mt-0.5"><span>🌙</span> <span class="truncate">Night: ${nightCodes.condition}</span></span>
+                    <span class="text-sm font-semibold text-slate-700 truncate">${funCondition}</span>
+                    <span class="flex items-center gap-1 text-xs text-slate-400 mt-0.5"><span>🌙</span> <span class="truncate">Night: ${funNightCondition}</span></span>
                 </div>
                 <!-- Precip -->
                 <div class="shrink-0 w-12 text-right">
