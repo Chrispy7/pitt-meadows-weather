@@ -539,7 +539,7 @@ function updateWeatherCard(data) {
 
             const rowEl = document.createElement('div');
             const borderClass = i < totalDays - 1 ? 'border-b border-slate-100' : '';
-            rowEl.className = `flex items-center gap-4 px-5 py-4 ${borderClass} hover:bg-slate-50 transition-colors cursor-pointer group`;
+            rowEl.className = `flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 md:py-4 ${borderClass} hover:bg-slate-50 transition-colors cursor-pointer group`;
             
             // Precipitation display
             const precipDisplay = precipProb > 0
@@ -547,27 +547,29 @@ function updateWeatherCard(data) {
                 : `<span class="text-sm text-slate-300 font-semibold">0%</span>`;
 
             rowEl.innerHTML = `
-                <!-- Day + Date -->
-                <div class="flex flex-col items-start w-14 shrink-0">
-                    <span class="text-sm font-bold text-slate-800 leading-tight">${isToday ? 'TODAY' : shortDay}</span>
-                    <span class="text-xs text-slate-400 font-medium">${shortDate}</span>
-                </div>
-                <!-- Icon + Temps -->
-                <div class="flex items-center gap-3 w-36 shrink-0">
-                    <span class="text-4xl leading-none drop-shadow-sm">${dInfo.icon}</span>
-                    <div class="flex items-baseline gap-1.5">
-                        <span class="text-xl font-bold text-slate-800">${maxTemp}°</span>
+                <!-- Top Row: Day, Icon, Temps, Precip -->
+                <div class="flex items-center gap-3 w-full">
+                    <div class="flex flex-col items-start w-14 shrink-0">
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${isToday ? 'TODAY' : shortDay}</span>
+                        <span class="text-xs text-slate-400 font-medium">${shortDate}</span>
+                    </div>
+                    <span class="text-3xl md:text-4xl leading-none drop-shadow-sm shrink-0">${dInfo.icon}</span>
+                    <div class="flex items-baseline gap-1.5 shrink-0">
+                        <span class="text-lg md:text-xl font-bold text-slate-800">${maxTemp}°</span>
                         <span class="text-sm font-semibold text-slate-400">${minTemp}°</span>
                     </div>
+                    <div class="flex flex-col flex-1 min-w-0 hidden md:flex">
+                        <span class="text-sm font-semibold text-slate-700 break-words">${funCondition}</span>
+                        <span class="flex items-center gap-1 text-xs text-slate-400 mt-0.5"><span>🌙</span> <span class="break-words">Night: ${funNightCondition}</span></span>
+                    </div>
+                    <div class="shrink-0 w-12 text-right">
+                        ${precipDisplay}
+                    </div>
                 </div>
-                <!-- Conditions (Day + Night) -->
-                <div class="flex flex-col flex-1 min-w-0">
-                    <span class="text-sm font-semibold text-slate-700 break-words">${funCondition}</span>
-                    <span class="flex items-center gap-1 text-xs text-slate-400 mt-0.5"><span>🌙</span> <span class="break-words">Night: ${funNightCondition}</span></span>
-                </div>
-                <!-- Precip -->
-                <div class="shrink-0 w-12 text-right">
-                    ${precipDisplay}
+                <!-- Mobile-only: Condition text below -->
+                <div class="flex flex-col w-full pl-[68px] -mt-1 md:hidden">
+                    <span class="text-xs font-semibold text-slate-600">${funCondition}</span>
+                    <span class="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5"><span>🌙</span> Night: ${funNightCondition}</span>
                 </div>
             `;
             tenDayContainer.appendChild(rowEl);
@@ -783,6 +785,17 @@ async function selectCity(city) {
             flagHtml = `<img src="https://flagcdn.com/w40/${cc}.png" srcset="https://flagcdn.com/w80/${cc}.png 2x" alt="${city.country || cc}" class="inline-block h-6 w-auto rounded-sm shadow-sm">`;
         }
         cityNameEl.innerHTML = `${city.name} <span id="city-flag-header" class="flex items-center" title="${city.country || ''}">${flagHtml}</span>`;
+    }
+    
+    // Update mobile city name
+    const cityNameMobileEl = document.getElementById('city-name-header-mobile');
+    if (cityNameMobileEl) {
+        let flagHtml = '';
+        if (city.country_code) {
+            const cc = city.country_code.toLowerCase();
+            flagHtml = `<img src="https://flagcdn.com/w40/${cc}.png" srcset="https://flagcdn.com/w80/${cc}.png 2x" alt="${city.country || cc}" class="inline-block h-5 w-auto rounded-sm shadow-sm">`;
+        }
+        cityNameMobileEl.innerHTML = `${city.name} <span id="city-flag-header-mobile" class="flex items-center" title="${city.country || ''}">${flagHtml}</span>`;
     }
     
     // update radar map URL
