@@ -124,7 +124,7 @@
 </div>
 <div>
 <h1 class="text-xl font-bold text-slate-900 dark:text-white leading-none">SkyCast Pro</h1>
-<p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">Station ID: 4829-NY</p>
+<p id="station-id-display" class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">Station ID: GEO-6105521</p>
 </div>
 </div>
 <div class="h-8 w-px bg-slate-200 hidden md:block"></div>
@@ -132,14 +132,15 @@
 <div class="flex items-center gap-4 hidden md:flex">
 <div class="flex flex-col">
 <span class="font-label-caps text-label-caps text-secondary mb-1">ATMOSPHERIC PRECISION</span>
-<h2 id="city-name-header" class="font-headline-lg text-headline-lg text-on-surface">Pitt Meadows</h2>
+<h2 id="city-name-header" class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2">Pitt Meadows <span id="city-flag-header" class="flex items-center" title="Canada"><img src="https://flagcdn.com/w40/ca.png" srcset="https://flagcdn.com/w80/ca.png 2x" alt="Canada" class="inline-block h-6 w-auto rounded-sm shadow-sm"></span></h2>
 </div>
 </div>
 </div>
 <div class="flex items-center gap-6">
-<div class="flex items-center gap-2">
-<input type="text" id="city-search-input" placeholder="Search city..." class="px-3 py-1.5 bg-surface-container rounded-lg text-sm font-medium border-none focus:ring-2 focus:ring-primary outline-none w-48 text-on-surface">
-<button id="city-search-btn" class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-container transition-colors">Go</button>
+<div class="relative flex items-center gap-2">
+<input type="text" id="city-search-input" placeholder="Search city..." autocomplete="off" class="px-3 py-1.5 bg-surface-container rounded-lg text-sm font-medium border-none focus:ring-2 focus:ring-primary outline-none w-48 text-on-surface">
+<button id="city-search-btn" class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-container transition-colors z-10 relative">Go</button>
+<div id="search-results-dropdown" class="absolute top-[calc(100%+4px)] left-0 w-full min-w-[260px] bg-white rounded-lg shadow-xl border border-slate-100 hidden z-50 max-h-60 overflow-y-auto flex flex-col"></div>
 </div>
 <div class="flex bg-surface-container rounded-full p-1">
 <button id="btn-celsius" class="px-3 py-1 bg-white shadow-sm rounded-full text-xs font-bold text-primary transition-colors">C°</button>
@@ -253,8 +254,13 @@
 <div class="bg-white border border-slate-100 rounded-3xl p-6 mb-6">
 <canvas id="meteogram-chart" width="100%" height="250"></canvas>
 </div>
-<div id="ten-day-forecast-container" class="flex gap-gutter overflow-x-auto pb-4 scrollbar-hide">
+<div class="bg-white border border-slate-100 rounded-3xl overflow-hidden">
+<div class="px-5 py-3 border-b border-slate-100">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">10-DAY WEATHER FORECAST</span>
+</div>
+<div id="ten-day-forecast-container" class="flex flex-col pb-2">
 <!-- Dynamic 10-Day Forecast Rows -->
+</div>
 </div>
 </section>
 

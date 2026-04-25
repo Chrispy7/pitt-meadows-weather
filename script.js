@@ -7,6 +7,22 @@ const loadingSpinner = document.getElementById('loading-spinner');
 let currentUnit = 'C';
 let weatherDataCache = null;
 let displayHourlyCount = 12;
+let searchTimeout = null;
+
+let userLat = null;
+let userLon = null;
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;  
+    const dLon = (lon2 - lon1) * Math.PI / 180; 
+    const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2); 
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    return R * c;
+}
 
 function convertTemp(tempC) {
     if (currentUnit === 'F') {
@@ -14,7 +30,8 @@ function convertTemp(tempC) {
     }
     return tempC;
 }
-function setUnit(unit) {
+
+function setUnit(unit) {
     if (currentUnit === unit) return;
     currentUnit = unit;
     
@@ -93,6 +110,15 @@ const getLongDay = (dateString) => {
     return localDate.toLocaleDateString('en-US', { weekday: 'long' });
 };
 
+const getShortDayDate = (dateString) => {
+    const date = new Date(dateString);
+    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+    const day = localDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+    const month = localDate.getMonth() + 1;
+    const d = localDate.getDate();
+    return { day, date: `${month}/${d}` };
+};
+
 const getWindDirectionStr = (degrees) => {
     const val = Math.floor((degrees / 22.5) + 0.5);
     const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
@@ -101,8 +127,8 @@ const getWindDirectionStr = (degrees) => {
 
 // Fetch Weather from Open-Meteo
 async function getWeather() {
-    const gemUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&models=gem_seamless&timezone=auto`;
-    const ecmwfUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&models=ecmwf_ifs025&timezone=auto&forecast_days=10`;
+    const gemUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&models=gem_seamless&timezone=auto`;
+    const ecmwfUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&models=ecmwf_ifs025&timezone=auto&forecast_days=10`;
     
     const [gemRes, ecmwfRes] = await Promise.all([fetch(gemUrl), fetch(ecmwfUrl)]);
     
@@ -162,8 +188,11 @@ function renderMeteogram(gemData, ecmwfData) {
              labels.push('');
         }
         
-        temperatures.push(convertTemp(sourceData.hourly.temperature_2m[i]));
-        precipitations.push(sourceData.hourly.precipitation[i] || 0);
+        const tArr = sourceData.hourly.temperature_2m;
+        temperatures.push(tArr ? convertTemp(tArr[i]) : 0);
+        
+        const pArr = sourceData.hourly.precipitation;
+        precipitations.push(pArr ? (pArr[i] || 0) : 0);
         
         const wCode = sourceData.hourly.weather_code ? sourceData.hourly.weather_code[i] : 0;
         const iconName = weatherCodes[wCode] ? weatherCodes[wCode].icon : 'help';
@@ -316,44 +345,46 @@ function updateWeatherCard(data) {
     const weatherInfo = weatherCodes[wCode] || defaultWeather;
 
     // --- Current Hero ---
-    const currTempEl = document.getElementById(`current-temp`);
+    const currTempEl = document.getElementById('current-temp');
     if (currTempEl) {
         currTempEl.textContent = `${Math.round(convertTemp(current.temperature_2m))}°`;
         const feelsLikeEl = document.getElementById('current-feels-like');
         if (feelsLikeEl && current.apparent_temperature !== undefined) {
             feelsLikeEl.textContent = `Feels like: ${Math.round(convertTemp(current.apparent_temperature))}°`;
         }
-        document.getElementById(`current-condition`).textContent = weatherInfo.condition;
-        document.getElementById(`current-icon`).textContent = weatherInfo.icon;
+        document.getElementById('current-condition').textContent = weatherInfo.condition;
+        document.getElementById('current-icon').textContent = weatherInfo.icon;
         
-        document.getElementById(`current-range`).textContent = `H: ${Math.round(convertTemp(daily.temperature_2m_max[0]))}° / L: ${Math.round(convertTemp(daily.temperature_2m_min[0]))}°`;
+        const high = daily.temperature_2m_max ? Math.round(convertTemp(daily.temperature_2m_max[0])) : '--';
+        const low = daily.temperature_2m_min ? Math.round(convertTemp(daily.temperature_2m_min[0])) : '--';
+        document.getElementById('current-range').textContent = `H: ${high}° / L: ${low}°`;
         
         // Precip & Wind
-        const precipProb = daily.precipitation_probability_max[0] || 0;
-        document.getElementById(`current-precip`).textContent = `Precip: ${precipProb}%`;
-        document.getElementById(`current-wind`).textContent = `Wind: ${Math.round(current.wind_speed_10m)}km/h ${getWindDirectionStr(current.wind_direction_10m)}`;
+        const precipProb = daily.precipitation_probability_max ? (daily.precipitation_probability_max[0] || 0) : 0;
+        document.getElementById('current-precip').textContent = `Precip: ${precipProb}%`;
+        document.getElementById('current-wind').textContent = `Wind: ${Math.round(current.wind_speed_10m)}km/h ${getWindDirectionStr(current.wind_direction_10m)}`;
     }
 
     // --- Stats Grid Mini ---
-    const statHumEl = document.getElementById(`stat-humidity`);
+    const statHumEl = document.getElementById('stat-humidity');
     if (statHumEl) {
         statHumEl.textContent = `${Math.round(current.relative_humidity_2m)}%`;
-        document.getElementById(`stat-humidity-bar`).style.width = `${current.relative_humidity_2m}%`;
+        document.getElementById('stat-humidity-bar').style.width = `${current.relative_humidity_2m}%`;
         
         // Open-Meteo GEM doesn't provide UV easily in this model, so leave placeholder or set to 4
-        document.getElementById(`stat-uv`).textContent = `4`; 
+        document.getElementById('stat-uv').textContent = `4`; 
         
         // Visibility is in meters, convert to km
         const visibilityKm = (current.visibility / 1000).toFixed(1);
-        document.getElementById(`stat-visibility`).textContent = `${visibilityKm} km`;
+        document.getElementById('stat-visibility').textContent = `${visibilityKm} km`;
         
         // Pressure in hPa to kPa (1 hPa = 0.1 kPa)
         const pressureKpa = (current.surface_pressure / 10).toFixed(1);
-        document.getElementById(`stat-pressure`).textContent = `${pressureKpa}`;
+        document.getElementById('stat-pressure').textContent = `${pressureKpa}`;
     }
 
     // --- Hourly Forecast ---
-    const hourlyContainer = document.getElementById(`hourly-forecast-container`);
+    const hourlyContainer = document.getElementById('hourly-forecast-container');
     if (hourlyContainer) {
         hourlyContainer.innerHTML = '';
         
@@ -414,53 +445,59 @@ function updateWeatherCard(data) {
         const ecmwfDaily = ecmwfData.daily;
         const totalDays = Math.min(ecmwfDaily.time.length, 10);
         
-        // Determine overall min/max to scale the temperature bars
-        let absoluteMinTemp = 999;
-        let absoluteMaxTemp = -999;
-        for (let i = 0; i < totalDays; i++) {
-            const sourceDaily = i < 3 ? daily : ecmwfDaily;
-            if (i >= sourceDaily.time.length) continue;
-            const minT = Math.round(convertTemp(sourceDaily.temperature_2m_min[i]));
-            const maxT = Math.round(convertTemp(sourceDaily.temperature_2m_max[i]));
-            if (minT < absoluteMinTemp) absoluteMinTemp = minT;
-            if (maxT > absoluteMaxTemp) absoluteMaxTemp = maxT;
-        }
-        const tempRange = absoluteMaxTemp - absoluteMinTemp;
-        
         for (let i = 0; i < totalDays; i++) {
             const isGem = i < 3;
             const sourceDaily = isGem ? daily : ecmwfDaily;
             
-            // Ensure the source has data for this day
             if (i >= sourceDaily.time.length) continue;
 
             const dateStr = sourceDaily.time[i];
-            const maxTemp = Math.round(convertTemp(sourceDaily.temperature_2m_max[i]));
-            const minTemp = Math.round(convertTemp(sourceDaily.temperature_2m_min[i]));
-            const precipSum = sourceDaily.precipitation_sum[i] || 0;
+            const maxTemp = sourceDaily.temperature_2m_max ? Math.round(convertTemp(sourceDaily.temperature_2m_max[i])) : '--';
+            const minTemp = sourceDaily.temperature_2m_min ? Math.round(convertTemp(sourceDaily.temperature_2m_min[i])) : '--';
+            const precipSum = sourceDaily.precipitation_sum ? (sourceDaily.precipitation_sum[i] || 0) : 0;
+            const precipProb = sourceDaily.precipitation_probability_max ? (sourceDaily.precipitation_probability_max[i] || 0) : 0;
             const dCode = sourceDaily.weather_code[i];
             const dInfo = weatherCodes[dCode] || defaultWeather;
             
-            const dayName = i === 0 ? "Today" : getLongDay(dateStr);
+            const isToday = i === 0;
+            const { day: shortDay, date: shortDate } = getShortDayDate(dateStr);
 
-            // Calculate positions for the bar
-            const leftPercent = ((minTemp - absoluteMinTemp) / tempRange) * 100;
-            const widthPercent = ((maxTemp - minTemp) / tempRange) * 100;
+            // Night uses the next day's weather code as an approximation (or overcast/clear)
+            // For simplicity we show a moon + "Night" condition label
+            const nightCodes = { condition: 'Mainly clear', icon: '🌙' };
 
             const rowEl = document.createElement('div');
-            rowEl.className = 'flex-1 min-w-[100px] flex flex-col items-center p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors text-center';
+            const borderClass = i < totalDays - 1 ? 'border-b border-slate-100' : '';
+            rowEl.className = `flex items-center gap-4 px-5 py-4 ${borderClass} hover:bg-slate-50 transition-colors cursor-pointer group`;
             
+            // Precipitation display
+            const precipDisplay = precipProb > 0
+                ? `<span class="flex items-center gap-1 text-[#4b9fd5] text-sm font-semibold whitespace-nowrap"><svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor"><path d="M6 0 C6 0 0 7 0 9.5 a6 6 0 0 0 12 0 C12 7 6 0 6 0z"/></svg>${precipProb}%</span>`
+                : `<span class="text-sm text-slate-300 font-semibold">0%</span>`;
+
             rowEl.innerHTML = `
-                <span class="font-bold text-on-surface whitespace-nowrap mb-2">${dayName}</span>
-                <span class="text-4xl leading-none drop-shadow-sm my-2">${dInfo.icon}</span>
-                <div class="flex justify-center gap-3 w-full mt-2">
-                    <span class="text-sm font-bold text-slate-400">${minTemp}°</span>
-                    <span class="text-sm font-bold text-on-surface">${maxTemp}°</span>
+                <!-- Day + Date -->
+                <div class="flex flex-col items-start w-14 shrink-0">
+                    <span class="text-sm font-bold text-slate-800 leading-tight">${isToday ? 'TODAY' : shortDay}</span>
+                    <span class="text-xs text-slate-400 font-medium">${shortDate}</span>
                 </div>
-                <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden relative mt-2 mb-1">
-                    <div class="absolute h-full bg-gradient-to-r from-blue-400 to-red-400 rounded-full opacity-60" style="left: ${leftPercent}%; width: ${Math.max(widthPercent, 5)}%;"></div>
+                <!-- Icon + Temps -->
+                <div class="flex items-center gap-3 w-36 shrink-0">
+                    <span class="text-4xl leading-none drop-shadow-sm">${dInfo.icon}</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-xl font-bold text-slate-800">${maxTemp}°</span>
+                        <span class="text-sm font-semibold text-slate-400">${minTemp}°</span>
+                    </div>
                 </div>
-                <span class="text-[10px] font-bold text-slate-400 mt-2 h-4">${precipSum > 0 ? precipSum.toFixed(1) + 'mm' : ''}</span>
+                <!-- Conditions (Day + Night) -->
+                <div class="flex flex-col flex-1 min-w-0">
+                    <span class="text-sm font-semibold text-slate-700 truncate">${dInfo.condition}</span>
+                    <span class="flex items-center gap-1 text-xs text-slate-400 mt-0.5"><span>🌙</span> <span class="truncate">Night: ${nightCodes.condition}</span></span>
+                </div>
+                <!-- Precip -->
+                <div class="shrink-0 w-12 text-right">
+                    ${precipDisplay}
+                </div>
             `;
             tenDayContainer.appendChild(rowEl);
         }
@@ -507,6 +544,18 @@ async function initializeDashboard() {
 
 // Load on startup
 document.addEventListener('DOMContentLoaded', () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                userLat = position.coords.latitude;
+                userLon = position.coords.longitude;
+            },
+            (error) => {
+                console.log("Geolocation error/denied, falling back to current location for proximity sorting.");
+            }
+        );
+    }
+
     document.getElementById('btn-celsius')?.addEventListener('click', () => setUnit('C'));
     document.getElementById('btn-fahrenheit')?.addEventListener('click', () => setUnit('F'));
     document.getElementById('btn-full-24h')?.addEventListener('click', () => {
@@ -542,52 +591,161 @@ document.addEventListener('DOMContentLoaded', () => {
         if(btnPrecip) btnPrecip.className = "px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors";
     });
     
+    const searchInput = document.getElementById('city-search-input');
+    const dropdown = document.getElementById('search-results-dropdown');
+
+    searchInput?.addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (searchTimeout) clearTimeout(searchTimeout);
+        if (val.length < 2) {
+            if(dropdown) dropdown.classList.add('hidden');
+            return;
+        }
+        searchTimeout = setTimeout(() => {
+            fetchCitySuggestions(val);
+        }, 300);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (searchInput && dropdown && !searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
     document.getElementById('city-search-btn')?.addEventListener('click', () => {
-        const input = document.getElementById('city-search-input');
-        if (input && input.value) {
-            searchCity(input.value);
+        if (searchInput && searchInput.value) {
+            searchCity(searchInput.value);
+            if(dropdown) dropdown.classList.add('hidden');
         }
     });
     
-    document.getElementById('city-search-input')?.addEventListener('keypress', (e) => {
+    searchInput?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             searchCity(e.target.value);
+            if(dropdown) dropdown.classList.add('hidden');
         }
     });
 
     initializeDashboard();
 });
 
+async function fetchCitySuggestions(query) {
+    try {
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=20&language=en&format=json`;
+        const res = await fetch(geoUrl);
+        const data = await res.json();
+        
+        const dropdown = document.getElementById('search-results-dropdown');
+        if(!dropdown) return;
+        dropdown.innerHTML = '';
+        
+        if (data.results && data.results.length > 0) {
+            const refLat = userLat !== null ? userLat : currentLat;
+            const refLon = userLon !== null ? userLon : currentLon;
+            
+            data.results.sort((a, b) => {
+                const distA = getDistance(refLat, refLon, a.latitude, a.longitude);
+                const distB = getDistance(refLat, refLon, b.latitude, b.longitude);
+                return distA - distB;
+            });
+
+            const topResults = data.results.slice(0, 5);
+
+            topResults.forEach(city => {
+                const item = document.createElement('div');
+                item.className = 'px-3 py-2 hover:bg-surface-container cursor-pointer flex items-center justify-between border-b border-slate-50 last:border-0';
+                
+                let flagHtml = '';
+                if (city.country_code) {
+                    const cc = city.country_code.toLowerCase();
+                    flagHtml = `<img src="https://flagcdn.com/w20/${cc}.png" srcset="https://flagcdn.com/w40/${cc}.png 2x" alt="${city.country || cc}" class="h-4 w-auto rounded-sm">`;
+                }
+                
+                let details = city.country || '';
+                if (city.admin1 && city.admin1 !== city.name) {
+                    details = `${city.admin1}, ${details}`;
+                }
+                
+                item.innerHTML = `
+                    <div class="flex flex-col text-left overflow-hidden">
+                        <span class="text-sm font-bold text-on-surface truncate">${city.name}</span>
+                        <span class="text-[10px] text-on-surface-variant leading-tight truncate">${details}</span>
+                    </div>
+                    <span class="ml-3 shrink-0 flex items-center" title="${city.country || ''}">${flagHtml}</span>
+                `;
+                
+                item.addEventListener('click', () => {
+                    selectCity(city);
+                    dropdown.classList.add('hidden');
+                    const input = document.getElementById('city-search-input');
+                    if(input) input.value = city.name;
+                });
+                
+                dropdown.appendChild(item);
+            });
+            dropdown.classList.remove('hidden');
+        } else {
+            dropdown.innerHTML = '<div class="px-3 py-2 text-sm text-slate-500 text-center">No results found</div>';
+            dropdown.classList.remove('hidden');
+        }
+    } catch(err) {
+        console.error("Error fetching suggestions:", err);
+    }
+}
+
+async function selectCity(city) {
+    currentLat = city.latitude;
+    currentLon = city.longitude;
+    currentElevation = city.elevation || 10;
+    currentCityName = city.name;
+    
+    const stationIdEl = document.getElementById('station-id-display');
+    if (stationIdEl && city.id) {
+        stationIdEl.textContent = `Station ID: GEO-${city.id}`;
+    }
+    
+    const cityNameEl = document.getElementById('city-name-header');
+    if (cityNameEl) {
+        let flagHtml = '';
+        if (city.country_code) {
+            const cc = city.country_code.toLowerCase();
+            flagHtml = `<img src="https://flagcdn.com/w40/${cc}.png" srcset="https://flagcdn.com/w80/${cc}.png 2x" alt="${city.country || cc}" class="inline-block h-6 w-auto rounded-sm shadow-sm">`;
+        }
+        cityNameEl.innerHTML = `${city.name} <span id="city-flag-header" class="flex items-center" title="${city.country || ''}">${flagHtml}</span>`;
+    }
+    
+    // update radar map URL
+    const iframe = document.getElementById('radar-iframe');
+    if(iframe) {
+        const src = iframe.src;
+        const newSrc = src.replace(/lat=[-\d.]+/, `lat=${currentLat}`).replace(/lon=[-\d.]+/, `lon=${currentLon}`);
+        iframe.src = newSrc;
+    }
+    
+    await initializeDashboard();
+    
+    // Clear input
+    const input = document.getElementById('city-search-input');
+    if (input) input.value = '';
+}
+
 async function searchCity(cityName) {
     if (!cityName) return;
     try {
         loadingSpinner.classList.remove('hidden');
-        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=20&language=en&format=json`;
         const res = await fetch(geoUrl);
         const data = await res.json();
         if (data.results && data.results.length > 0) {
+            const refLat = userLat !== null ? userLat : currentLat;
+            const refLon = userLon !== null ? userLon : currentLon;
+            data.results.sort((a, b) => {
+                const distA = getDistance(refLat, refLon, a.latitude, a.longitude);
+                const distB = getDistance(refLat, refLon, b.latitude, b.longitude);
+                return distA - distB;
+            });
             const city = data.results[0];
-            currentLat = city.latitude;
-            currentLon = city.longitude;
-            currentElevation = city.elevation || 10;
-            currentCityName = city.name;
-            
-            const cityNameEl = document.getElementById('city-name-header');
-            if (cityNameEl) cityNameEl.textContent = currentCityName;
-            
-            // update radar map URL
-            const iframe = document.getElementById('radar-iframe');
-            if(iframe) {
-                const src = iframe.src;
-                const newSrc = src.replace(/lat=[-\d.]+/, `lat=${currentLat}`).replace(/lon=[-\d.]+/, `lon=${currentLon}`);
-                iframe.src = newSrc;
-            }
-            
-            await initializeDashboard();
-            
-            // Clear input
-            const input = document.getElementById('city-search-input');
-            if (input) input.value = '';
+            await selectCity(city);
         } else {
             alert("City not found.");
             loadingSpinner.classList.add('hidden');
