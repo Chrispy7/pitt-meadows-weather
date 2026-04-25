@@ -562,8 +562,8 @@ function updateWeatherCard(data) {
                 </div>
                 <!-- Conditions (Day + Night) -->
                 <div class="flex flex-col flex-1 min-w-0">
-                    <span class="text-sm font-semibold text-slate-700 truncate">${funCondition}</span>
-                    <span class="flex items-center gap-1 text-xs text-slate-400 mt-0.5"><span>🌙</span> <span class="truncate">Night: ${funNightCondition}</span></span>
+                    <span class="text-sm font-semibold text-slate-700 break-words">${funCondition}</span>
+                    <span class="flex items-center gap-1 text-xs text-slate-400 mt-0.5"><span>🌙</span> <span class="break-words">Night: ${funNightCondition}</span></span>
                 </div>
                 <!-- Precip -->
                 <div class="shrink-0 w-12 text-right">

@@ -115,7 +115,7 @@
 <!-- Main Content Canvas -->
 <main id="weather-main" class="p-container-margin hidden mx-auto max-w-[1400px]">
 <!-- TopAppBar Context -->
-<header class="flex justify-between items-center w-full px-2 py-3 mb-stack-lg">
+<header class="flex flex-col md:flex-row justify-between items-center w-full px-2 py-3 mb-stack-lg gap-4">
 <div class="flex items-center gap-8">
 <!-- SkyCast Pro Branding -->
 <div class="flex items-center gap-3">
@@ -250,7 +250,7 @@
 </section>
 
 <!-- 10-Day Forecast -->
-<section class="mb-section-gap">
+<section class="mb-section-gap hidden md:block">
 <div class="bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col p-6">
 <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
 <h3 class="font-headline-md text-headline-md text-on-surface">10-Day Weather Meteogram</h3>
@@ -267,8 +267,8 @@
 <!-- Radar & 10-Day Forecast Grid -->
 <section class="grid grid-cols-12 gap-gutter">
 <!-- Radar Map -->
-<div class="col-span-12 lg:col-span-7 bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col">
-<div class="p-6 flex items-center justify-between border-b border-slate-100">
+<div class="col-span-12 lg:col-span-7 bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col order-2 lg:order-1">
+<div class="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100">
 <div class="flex items-center gap-3">
 <div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
 <span class="material-symbols-outlined">satellite_alt</span>
@@ -286,7 +286,7 @@
 </div>
 
 <!-- 10-Day Forecast List -->
-<div class="col-span-12 lg:col-span-5 flex flex-col bg-white border border-slate-100 rounded-3xl overflow-hidden">
+<div class="col-span-12 lg:col-span-5 flex flex-col bg-white border border-slate-100 rounded-3xl overflow-hidden order-1 lg:order-2">
 <div class="p-6 flex items-center justify-between border-b border-slate-100">
 <h3 class="font-headline-md text-headline-md text-on-surface">10-Day Weather Forecast</h3>
 </div>
