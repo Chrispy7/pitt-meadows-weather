@@ -562,7 +562,7 @@ function updateWeatherCard(data) {
                         <span class="text-sm font-semibold text-slate-700 break-words">${funCondition}</span>
                         <span class="flex items-center gap-1 text-xs text-slate-400 mt-0.5"><span>🌙</span> <span class="break-words">Night: ${funNightCondition}</span></span>
                     </div>
-                    <div class="shrink-0 w-12 text-right">
+                    <div class="shrink-0 w-12 text-right ml-auto">
                         ${precipDisplay}
                     </div>
                 </div>
