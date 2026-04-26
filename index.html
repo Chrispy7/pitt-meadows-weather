@@ -1,334 +1,372 @@
 <!DOCTYPE html>
 
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              "colors": {
-                      "secondary": "#1c648e",
-                      "surface-container-high": "#dde9ff",
-                      "on-secondary": "#ffffff",
-                      "surface": "#f8f9ff",
-                      "primary-fixed-dim": "#adc6ff",
-                      "on-tertiary-container": "#fbfcff",
-                      "secondary-fixed-dim": "#90cdfd",
-                      "surface-container-low": "#eff4ff",
-                      "on-secondary-fixed": "#001e30",
-                      "outline-variant": "#c1c6d7",
-                      "on-primary-container": "#fefcff",
-                      "inverse-surface": "#253141",
-                      "surface-tint": "#005bc1",
-                      "on-surface-variant": "#414755",
-                      "on-error-container": "#93000a",
-                      "error-container": "#ffdad6",
-                      "tertiary-fixed-dim": "#c4c7ca",
-                      "on-surface": "#101c2c",
-                      "inverse-on-surface": "#eaf1ff",
-                      "surface-variant": "#d7e3f9",
-                      "on-tertiary": "#ffffff",
-                      "inverse-primary": "#adc6ff",
-                      "surface-dim": "#cedbf0",
-                      "tertiary": "#595c5f",
-                      "on-error": "#ffffff",
-                      "primary-fixed": "#d8e2ff",
-                      "on-secondary-fixed-variant": "#004b70",
-                      "background": "#f8f9ff",
-                      "on-primary-fixed": "#001a41",
-                      "surface-container-lowest": "#ffffff",
-                      "surface-container": "#e6eeff",
-                      "primary-container": "#0070eb",
-                      "on-tertiary-fixed": "#191c1e",
-                      "surface-bright": "#f8f9ff",
-                      "on-primary": "#ffffff",
-                      "surface-container-highest": "#d7e3f9",
-                      "primary": "#0058bc",
-                      "tertiary-container": "#727578",
-                      "outline": "#717786",
-                      "on-secondary-container": "#025881",
-                      "on-tertiary-fixed-variant": "#44474a",
-                      "error": "#ba1a1a",
-                      "secondary-fixed": "#cae6ff",
-                      "on-background": "#101c2c",
-                      "secondary-container": "#90cdfd",
-                      "on-primary-fixed-variant": "#004493",
-                      "tertiary-fixed": "#e0e3e6"
-              },
-              "borderRadius": {
-                      "DEFAULT": "0.25rem",
-                      "lg": "0.5rem",
-                      "xl": "0.75rem",
-                      "full": "9999px"
-              },
-              "spacing": {
-                      "unit": "8px",
-                      "container-margin": "24px",
-                      "gutter": "16px",
-                      "section-gap": "40px",
-                      "stack-sm": "4px",
-                      "stack-md": "12px",
-                      "stack-lg": "24px"
-              },
-              "fontFamily": {
-                      "display-temp": ["Manrope"],
-                      "headline-md": ["Manrope"],
-                      "label-caps": ["Manrope"],
-                      "body-md": ["Manrope"],
-                      "data-tabular": ["Manrope"],
-                      "headline-lg": ["Manrope"],
-                      "body-lg": ["Manrope"]
-              },
-              "fontSize": {
-                      "display-temp": ["84px", {"lineHeight": "90px", "letterSpacing": "-0.04em", "fontWeight": "200"}],
-                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
-                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                      "data-tabular": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
-                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
-              }
-            },
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;600;700;800&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#1c648e",
+            "surface-container-high": "#dde9ff",
+            "on-secondary": "#ffffff",
+            "surface": "#f8f9ff",
+            "primary-fixed-dim": "#adc6ff",
+            "on-tertiary-container": "#fbfcff",
+            "secondary-fixed-dim": "#90cdfd",
+            "surface-container-low": "#eff4ff",
+            "on-secondary-fixed": "#001e30",
+            "outline-variant": "#c1c6d7",
+            "on-primary-container": "#fefcff",
+            "inverse-surface": "#253141",
+            "surface-tint": "#005bc1",
+            "on-surface-variant": "#414755",
+            "on-error-container": "#93000a",
+            "error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#c4c7ca",
+            "on-surface": "#101c2c",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-variant": "#d7e3f9",
+            "on-tertiary": "#ffffff",
+            "inverse-primary": "#adc6ff",
+            "surface-dim": "#cedbf0",
+            "tertiary": "#595c5f",
+            "on-error": "#ffffff",
+            "primary-fixed": "#d8e2ff",
+            "on-secondary-fixed-variant": "#004b70",
+            "background": "#f8f9ff",
+            "on-primary-fixed": "#001a41",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#e6eeff",
+            "primary-container": "#0070eb",
+            "on-tertiary-fixed": "#191c1e",
+            "surface-bright": "#f8f9ff",
+            "on-primary": "#ffffff",
+            "surface-container-highest": "#d7e3f9",
+            "primary": "#0058bc",
+            "tertiary-container": "#727578",
+            "outline": "#717786",
+            "on-secondary-container": "#025881",
+            "on-tertiary-fixed-variant": "#44474a",
+            "error": "#ba1a1a",
+            "secondary-fixed": "#cae6ff",
+            "on-background": "#101c2c",
+            "secondary-container": "#90cdfd",
+            "on-primary-fixed-variant": "#004493",
+            "tertiary-fixed": "#e0e3e6"
           },
-        }
-    </script>
-<style>
-        .glass-card {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
-        }
-    </style>
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "unit": "8px",
+            "container-margin": "24px",
+            "gutter": "16px",
+            "section-gap": "40px",
+            "stack-sm": "4px",
+            "stack-md": "12px",
+            "stack-lg": "24px"
+          },
+          "fontFamily": {
+            "display-temp": ["Manrope"],
+            "headline-md": ["Manrope"],
+            "label-caps": ["Manrope"],
+            "body-md": ["Manrope"],
+            "data-tabular": ["Manrope"],
+            "headline-lg": ["Manrope"],
+            "body-lg": ["Manrope"]
+          },
+          "fontSize": {
+            "display-temp": ["84px", { "lineHeight": "90px", "letterSpacing": "-0.04em", "fontWeight": "200" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "data-tabular": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+  </style>
 </head>
+
 <body class="bg-background text-on-background font-body-md antialiased min-h-screen">
-<!-- Main Content Canvas -->
-<main id="weather-main" class="p-container-margin hidden mx-auto max-w-[1400px]">
-<!-- TopAppBar Context -->
-<header class="flex flex-col md:flex-row justify-between items-center w-full px-2 py-3 mb-stack-lg gap-4">
-<div class="flex items-center gap-8">
-<!-- SkyCast Pro Branding -->
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
-<span class="material-symbols-outlined">filter_drama</span>
-</div>
-<div>
-<h1 class="text-xl font-bold text-slate-900 dark:text-white leading-none">SkyCast Pro</h1>
-<p id="station-id-display" class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">Station ID: GEO-6105521</p>
-</div>
-</div>
-<div class="h-8 w-px bg-slate-200 hidden md:block"></div>
-<!-- Location & Model (Desktop) -->
-<div class="flex items-center gap-4 hidden md:flex">
-<div class="flex flex-col">
-<span class="font-label-caps text-label-caps text-secondary mb-1">ATMOSPHERIC PRECISION</span>
-<h2 id="city-name-header" class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2">Pitt Meadows <span id="city-flag-header" class="flex items-center" title="Canada"><img src="https://flagcdn.com/w40/ca.png" srcset="https://flagcdn.com/w80/ca.png 2x" alt="Canada" class="inline-block h-6 w-auto rounded-sm shadow-sm"></span></h2>
-</div>
-</div>
-</div>
-<!-- Location (Mobile) -->
-<div class="flex md:hidden items-center gap-2 -mt-2">
-<h2 id="city-name-header-mobile" class="text-2xl font-bold text-on-surface flex items-center gap-2">Pitt Meadows <span id="city-flag-header-mobile" class="flex items-center" title="Canada"><img src="https://flagcdn.com/w40/ca.png" srcset="https://flagcdn.com/w80/ca.png 2x" alt="Canada" class="inline-block h-5 w-auto rounded-sm shadow-sm"></span></h2>
-</div>
-<div class="flex items-center gap-6">
-<div class="relative flex items-center gap-2">
-<input type="text" id="city-search-input" placeholder="Search city..." autocomplete="off" class="px-3 py-1.5 bg-surface-container rounded-lg text-sm font-medium border-none focus:ring-2 focus:ring-primary outline-none w-48 text-on-surface">
-<button id="city-search-btn" class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-container transition-colors z-10 relative">Go</button>
-<div id="search-results-dropdown" class="absolute top-[calc(100%+4px)] left-0 w-full min-w-[260px] bg-white rounded-lg shadow-xl border border-slate-100 hidden z-50 max-h-60 overflow-y-auto flex flex-col"></div>
-</div>
-<div class="flex bg-surface-container rounded-full p-1">
-<button id="btn-celsius" class="px-3 py-1 bg-white shadow-sm rounded-full text-xs font-bold text-primary transition-colors">C°</button>
-<button id="btn-fahrenheit" class="px-3 py-1 text-xs font-bold text-outline hover:text-primary transition-colors">F°</button>
-</div>
-</div>
-</header>
-<!-- Hero Section -->
-<section class="grid grid-cols-12 gap-gutter mb-section-gap">
-<!-- Current Hero Card -->
-<div class="col-span-12 lg:col-span-8 bg-gradient-to-br from-primary-container to-primary p-10 rounded-[2rem] relative overflow-hidden text-white">
-<div class="relative z-10 flex flex-col h-full justify-between">
-<div class="flex justify-between items-start">
-<div>
-<p class="font-label-caps text-label-caps opacity-80 mb-2">CURRENT CONDITIONS</p>
-<h3 id="current-condition" class="font-headline-md text-headline-md">--</h3>
-</div>
-<div class="text-right">
-<p class="font-label-caps text-label-caps opacity-80 mb-1">TODAY'S RANGE</p>
-<p id="current-range" class="font-data-tabular text-data-tabular">H: --° / L: --°</p>
-</div>
-</div>
-<div class="flex items-baseline gap-4 mt-8">
-<span id="current-temp" class="font-display-temp text-display-temp">--°</span>
-<span id="current-icon" class="text-[64px] leading-none drop-shadow-md">❓</span>
-<span id="current-feels-like" class="text-xl font-medium opacity-80 self-end mb-4 ml-2">Feels like: --°</span>
-</div>
-<div class="mt-8 flex gap-stack-lg flex-wrap">
-<div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
-<span class="material-symbols-outlined text-sm">water_drop</span>
-<span id="current-precip" class="text-xs font-semibold">Precip: --%</span>
-</div>
-<div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
-<span class="material-symbols-outlined text-sm">air</span>
-<span id="current-wind" class="text-xs font-semibold">Wind: --km/h</span>
-</div>
-<button id="current-warning-btn" class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl transition-colors cursor-default">
-<span class="material-symbols-outlined text-sm">info</span>
-<span id="current-warning-text" class="text-xs font-semibold">No warnings</span>
-</button>
-</div>
-</div>
-<!-- Decorative element -->
-<div class="absolute right-[-5%] bottom-[-10%] opacity-20 transform scale-150">
-<span class="material-symbols-outlined text-[300px]">cloud_queue</span>
-</div>
-</div>
-<!-- Stats Grid Mini -->
-<div class="col-span-12 lg:col-span-4 grid grid-cols-2 gap-gutter">
-<div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
-<div class="flex items-center justify-between text-on-surface-variant">
-<span class="material-symbols-outlined">device_thermostat</span>
-<span class="font-label-caps text-[10px]">HUMIDITY</span>
-</div>
-<div>
-<p id="stat-humidity" class="font-headline-md text-headline-md text-on-surface">--%</p>
-<div class="w-full bg-outline-variant h-1 rounded-full mt-2 overflow-hidden">
-<div id="stat-humidity-bar" class="bg-primary h-full w-[0%]"></div>
-</div>
-</div>
-</div>
-<div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
-<div class="flex items-center justify-between text-on-surface-variant">
-<span class="material-symbols-outlined">light_mode</span>
-<span class="font-label-caps text-[10px]">UV INDEX</span>
-</div>
-<div>
-<p id="stat-uv" class="font-headline-md text-headline-md text-on-surface">--</p>
-<p class="text-[10px] font-bold text-secondary mt-1">MODERATE</p>
-</div>
-</div>
-<div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
-<div class="flex items-center justify-between text-on-surface-variant">
-<span class="material-symbols-outlined">visibility</span>
-<span class="font-label-caps text-[10px]">VISIBILITY</span>
-</div>
-<div>
-<p id="stat-visibility" class="font-headline-md text-headline-md text-on-surface">-- km</p>
-<p class="text-[10px] font-bold text-on-surface-variant mt-1">CLEAR SKY</p>
-</div>
-</div>
-<div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
-<div class="flex items-center justify-between text-on-surface-variant">
-<span class="material-symbols-outlined">compress</span>
-<span class="font-label-caps text-[10px]">PRESSURE</span>
-</div>
-<div>
-<p id="stat-pressure" class="font-headline-md text-headline-md text-on-surface">--</p>
-<p class="text-[10px] font-bold text-on-surface-variant mt-1">KPA (STEADY)</p>
-</div>
-</div>
-</div>
-</section>
-<!-- Hourly Forecast -->
-<section class="mb-section-gap">
-<div class="bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col p-6">
-<div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
-<h3 class="font-headline-md text-headline-md text-on-surface">Hourly Forecast</h3>
-<button id="btn-full-24h" class="text-primary font-bold text-xs flex items-center gap-1 hover:underline">
-                    FULL 24H <span class="material-symbols-outlined text-sm">arrow_forward</span>
-</button>
-</div>
-<div id="hourly-forecast-container" class="flex gap-gutter overflow-x-auto pb-2 scrollbar-hide">
-<!-- Dynamic Hourly Forecast -->
-</div>
-</div>
-</section>
+  <!-- Main Content Canvas -->
+  <main id="weather-main" class="p-container-margin hidden mx-auto max-w-[1400px]">
+    <!-- TopAppBar Context -->
+    <header class="flex flex-col md:flex-row justify-between items-center w-full px-2 py-3 mb-stack-lg gap-4">
+      <div class="flex items-center gap-8">
+        <!-- SkyCast Pro Branding -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
+            <span class="material-symbols-outlined">filter_drama</span>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-slate-900 dark:text-white leading-none">SkyCast Pro</h1>
+            <p id="station-id-display" class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">
+              Station ID: GEO-6105521</p>
+          </div>
+        </div>
+        <div class="h-8 w-px bg-slate-200 hidden md:block"></div>
+        <!-- Location & Model (Desktop) -->
+        <div class="flex items-center gap-4 hidden md:flex">
+          <div class="flex flex-col">
+            <span class="font-label-caps text-label-caps text-secondary mb-1">ATMOSPHERIC PRECISION</span>
+            <h2 id="city-name-header" class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2">
+              Pitt Meadows <span id="city-flag-header" class="flex items-center" title="Canada"><img
+                  src="https://flagcdn.com/w40/ca.png" srcset="https://flagcdn.com/w80/ca.png 2x" alt="Canada"
+                  class="inline-block h-6 w-auto rounded-sm shadow-sm"></span></h2>
+          </div>
+        </div>
+      </div>
+      <!-- Location (Mobile) -->
+      <div class="flex md:hidden items-center gap-2 -mt-2">
+        <h2 id="city-name-header-mobile" class="text-2xl font-bold text-on-surface flex items-center gap-2">Pitt Meadows
+          <span id="city-flag-header-mobile" class="flex items-center" title="Canada"><img
+              src="https://flagcdn.com/w40/ca.png" srcset="https://flagcdn.com/w80/ca.png 2x" alt="Canada"
+              class="inline-block h-5 w-auto rounded-sm shadow-sm"></span></h2>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="relative flex items-center gap-2">
+          <input type="text" id="city-search-input" placeholder="Search city..." autocomplete="off"
+            class="px-3 py-1.5 bg-surface-container rounded-lg text-sm font-medium border-none focus:ring-2 focus:ring-primary outline-none w-48 text-on-surface">
+          <button id="city-search-btn"
+            class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-container transition-colors z-10 relative">Go</button>
+          <div id="search-results-dropdown"
+            class="absolute top-[calc(100%+4px)] left-0 w-full min-w-[260px] bg-white rounded-lg shadow-xl border border-slate-100 hidden z-50 max-h-60 overflow-y-auto flex flex-col">
+          </div>
+        </div>
+        <div class="flex bg-surface-container rounded-full p-1">
+          <button id="btn-celsius"
+            class="px-3 py-1 bg-white shadow-sm rounded-full text-xs font-bold text-primary transition-colors">C°</button>
+          <button id="btn-fahrenheit"
+            class="px-3 py-1 text-xs font-bold text-outline hover:text-primary transition-colors">F°</button>
+        </div>
+      </div>
+    </header>
+    <!-- Hero Section -->
+    <section class="grid grid-cols-12 gap-gutter mb-section-gap">
+      <!-- Current Hero Card -->
+      <div
+        class="col-span-12 lg:col-span-8 bg-gradient-to-br from-primary-container to-primary p-10 rounded-[2rem] relative overflow-hidden text-white">
+        <div class="relative z-10 flex flex-col h-full justify-between">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-label-caps text-label-caps opacity-80 mb-2">CURRENT CONDITIONS</p>
+              <h3 id="current-condition" class="font-headline-md text-headline-md">--</h3>
+            </div>
+            <div class="text-right">
+              <p class="font-label-caps text-label-caps opacity-80 mb-1">TODAY'S RANGE</p>
+              <p id="current-range" class="font-data-tabular text-data-tabular">H: --° / L: --°</p>
+            </div>
+          </div>
+          <div class="flex items-baseline gap-4 mt-8">
+            <span id="current-temp" class="font-display-temp text-display-temp">--°</span>
+            <span id="current-icon" class="text-[64px] leading-none drop-shadow-md">❓</span>
+            <span id="current-feels-like" class="text-xl font-medium opacity-80 self-end mb-4 ml-2">Feels like:
+              --°</span>
+          </div>
+          <div class="mt-8 flex gap-stack-lg flex-wrap">
+            <div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
+              <span class="material-symbols-outlined text-sm">water_drop</span>
+              <span id="current-precip" class="text-xs font-semibold">Precip: --%</span>
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
+              <span class="material-symbols-outlined text-sm">air</span>
+              <span id="current-wind" class="text-xs font-semibold">Wind: --km/h</span>
+            </div>
+            <button id="current-warning-btn"
+              class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl transition-colors cursor-default">
+              <span class="material-symbols-outlined text-sm">info</span>
+              <span id="current-warning-text" class="text-xs font-semibold">No warnings</span>
+            </button>
+          </div>
+        </div>
+        <!-- Decorative element -->
+        <div class="absolute right-[-5%] bottom-[-10%] opacity-20 transform scale-150">
+          <span class="material-symbols-outlined text-[300px]">cloud_queue</span>
+        </div>
+      </div>
+      <!-- Stats Grid Mini -->
+      <div class="col-span-12 lg:col-span-4 grid grid-cols-2 gap-gutter">
+        <div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between text-on-surface-variant">
+            <span class="material-symbols-outlined">device_thermostat</span>
+            <span class="font-label-caps text-[10px]">HUMIDITY</span>
+          </div>
+          <div>
+            <p id="stat-humidity" class="font-headline-md text-headline-md text-on-surface">--%</p>
+            <div class="w-full bg-outline-variant h-1 rounded-full mt-2 overflow-hidden">
+              <div id="stat-humidity-bar" class="bg-primary h-full w-[0%]"></div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between text-on-surface-variant">
+            <span class="material-symbols-outlined">light_mode</span>
+            <span class="font-label-caps text-[10px]">UV INDEX</span>
+          </div>
+          <div>
+            <p id="stat-uv" class="font-headline-md text-headline-md text-on-surface">--</p>
+            <p class="text-[10px] font-bold text-secondary mt-1">MODERATE</p>
+          </div>
+        </div>
+        <div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between text-on-surface-variant">
+            <span class="material-symbols-outlined">visibility</span>
+            <span class="font-label-caps text-[10px]">VISIBILITY</span>
+          </div>
+          <div>
+            <p id="stat-visibility" class="font-headline-md text-headline-md text-on-surface">-- km</p>
+            <p class="text-[10px] font-bold text-on-surface-variant mt-1">CLEAR SKY</p>
+          </div>
+        </div>
+        <div class="bg-surface-container-low p-stack-lg rounded-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between text-on-surface-variant">
+            <span class="material-symbols-outlined">compress</span>
+            <span class="font-label-caps text-[10px]">PRESSURE</span>
+          </div>
+          <div>
+            <p id="stat-pressure" class="font-headline-md text-headline-md text-on-surface">--</p>
+            <p class="text-[10px] font-bold text-on-surface-variant mt-1">KPA (STEADY)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Hourly Forecast -->
+    <section class="mb-section-gap">
+      <div class="bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col p-6">
+        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+          <h3 class="font-headline-md text-headline-md text-on-surface">Hourly Forecast</h3>
+          <button id="btn-full-24h" class="text-primary font-bold text-xs flex items-center gap-1 hover:underline">
+            FULL 24H <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
+        </div>
+        <div id="hourly-forecast-container" class="flex gap-gutter overflow-x-auto pb-2 scrollbar-hide">
+          <!-- Dynamic Hourly Forecast -->
+        </div>
+      </div>
+    </section>
 
-<!-- 10-Day Forecast -->
-<section class="mb-section-gap hidden md:block">
-<div class="bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col p-6">
-<div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
-<h3 class="font-headline-md text-headline-md text-on-surface">10-Day Weather Meteogram</h3>
-<div class="px-3 py-1 bg-surface-container-highest rounded-full flex items-center gap-2">
-<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">GEM (Days 1-3) + ECMWF (Days 4-10)</span>
-</div>
-</div>
-<div class="flex-1 min-h-[300px] relative">
-<canvas id="meteogram-chart" width="100%" height="100%" class="absolute inset-0"></canvas>
-</div>
-</div>
-</section>
+    <!-- 10-Day Forecast -->
+    <section class="mb-section-gap hidden md:block">
+      <div class="bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col p-6">
+        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+          <h3 class="font-headline-md text-headline-md text-on-surface">10-Day Weather Meteogram</h3>
+          <div class="px-3 py-1 bg-surface-container-highest rounded-full flex items-center gap-2">
+            <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">GEM (Days 1-3) + ECMWF
+              (Days 4-10)</span>
+          </div>
+        </div>
+        <div class="flex-1 min-h-[300px] relative">
+          <canvas id="meteogram-chart" width="100%" height="100%" class="absolute inset-0"></canvas>
+        </div>
+      </div>
+    </section>
 
-<!-- Radar & 10-Day Forecast Grid -->
-<section class="grid grid-cols-12 gap-gutter">
-<!-- Radar Map -->
-<div class="col-span-12 lg:col-span-7 bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col order-2 lg:order-1">
-<div class="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
-<span class="material-symbols-outlined">satellite_alt</span>
-</div>
-<h3 class="font-headline-md text-headline-md text-on-surface">Live Radar Map</h3>
-</div>
-<div class="flex gap-2">
-<button id="btn-radar-precip" class="px-4 py-2 bg-surface-container rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">Precipitation</button>
-<button id="btn-radar-wind" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors">Wind Speed</button>
-</div>
-</div>
-<div class="flex-1 min-h-[400px] relative">
-<iframe id="radar-iframe" width="100%" height="400" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=radar&product=radar&level=surface&lat=49.2238&lon=-122.6893" frameborder="0" class="w-full h-full absolute inset-0"></iframe>
-</div>
-</div>
+    <!-- Radar & 10-Day Forecast Grid -->
+    <section class="grid grid-cols-12 gap-gutter">
+      <!-- Radar Map -->
+      <div
+        class="col-span-12 lg:col-span-7 bg-white border border-slate-100 rounded-3xl overflow-hidden flex flex-col order-2 lg:order-1">
+        <div
+          class="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined">satellite_alt</span>
+            </div>
+            <h3 class="font-headline-md text-headline-md text-on-surface">Live Radar Map</h3>
+          </div>
+          <div class="flex gap-2">
+            <button id="btn-radar-precip"
+              class="px-4 py-2 bg-surface-container rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">Precipitation</button>
+            <button id="btn-radar-wind"
+              class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors">Wind
+              Speed</button>
+          </div>
+        </div>
+        <div class="flex-1 min-h-[400px] relative">
+          <iframe id="radar-iframe" width="100%" height="400"
+            src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=radar&product=radar&level=surface&lat=49.2238&lon=-122.6893"
+            frameborder="0" class="w-full h-full absolute inset-0"></iframe>
+        </div>
+      </div>
 
-<!-- 10-Day Forecast List -->
-<div class="col-span-12 lg:col-span-5 flex flex-col bg-white border border-slate-100 rounded-3xl overflow-hidden order-1 lg:order-2">
-<div class="p-6 flex items-center justify-between border-b border-slate-100">
-<h3 class="font-headline-md text-headline-md text-on-surface">10-Day Weather Forecast</h3>
-</div>
-<div class="flex-1 flex flex-col">
-<div id="ten-day-forecast-container" class="flex flex-col pb-2">
-<!-- Dynamic 10-Day Forecast Rows -->
-</div>
-</div>
-</div>
+      <!-- 10-Day Forecast List -->
+      <div
+        class="col-span-12 lg:col-span-5 flex flex-col bg-white border border-slate-100 rounded-3xl overflow-hidden order-1 lg:order-2">
+        <div class="p-6 flex items-center justify-between border-b border-slate-100">
+          <h3 class="font-headline-md text-headline-md text-on-surface">10-Day Weather Forecast</h3>
+        </div>
+        <div class="flex-1 flex flex-col">
+          <div id="ten-day-forecast-container" class="flex flex-col pb-2">
+            <!-- Dynamic 10-Day Forecast Rows -->
+          </div>
+        </div>
+      </div>
 
-</section>
+    </section>
 
-<!-- Footer -->
-<footer class="mt-4 text-center text-xs text-slate-400">
-<div class="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white border border-slate-100 rounded-3xl">
-<div class="font-medium text-slate-500">
-&copy; 2026 Chris Schwarz. All Rights Reserved.
-</div>
-<div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-medium">
-<a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
-<a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
-<a href="#" class="hover:text-primary transition-colors">Cookie Policy</a>
-<span class="cursor-help hover:text-primary transition-colors" title="Data provided by Open-Meteo (GEM & ECMWF models). Radar by Windy.">Data Sources</span>
-</div>
-</div>
-</footer>
+    <!-- Footer -->
+    <footer class="mt-4 text-center text-xs text-slate-400">
+      <div
+        class="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white border border-slate-100 rounded-3xl">
+        <div class="font-medium text-slate-500">
+          &copy; 2026 Chris Schwarz. All Rights Reserved.
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-medium">
+          <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+          <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+          <a href="#" class="hover:text-primary transition-colors">Cookie Policy</a>
+          <span class="cursor-help hover:text-primary transition-colors"
+            title="Data provided by Open-Meteo (GEM & ECMWF models). Radar by Windy.">Data Sources</span>
+        </div>
+      </div>
+    </footer>
 
-</main>
+  </main>
 
-<!-- Loading Spinner -->
-<div id="loading-spinner" class="fixed inset-0 bg-white/80 dark:bg-slate-900/80 z-50 flex flex-col items-center justify-center">
+  <!-- Loading Spinner -->
+  <div id="loading-spinner"
+    class="fixed inset-0 bg-white/80 dark:bg-slate-900/80 z-50 flex flex-col items-center justify-center">
     <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-primary border-solid"></div>
-    <p class="mt-4 font-bold text-primary">Fetching GEM Data...</p>
-</div>
-<!-- Error Message -->
-<div id="error-message" class="hidden fixed top-4 right-4 bg-error text-on-error p-4 rounded-xl shadow-lg z-50">
+    <p class="mt-4 font-bold text-primary">Fetching Weather Data...</p>
+  </div>
+  <!-- Error Message -->
+  <div id="error-message" class="hidden fixed top-4 right-4 bg-error text-on-error p-4 rounded-xl shadow-lg z-50">
     Failed to load weather data. Please try again.
-</div>
-<script src="script.js"></script>
+  </div>
+  <script src="script.js"></script>
 </body>
+
 </html>

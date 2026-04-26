@@ -71,30 +71,30 @@ let currentCityName = "Pitt Meadows";
 
 // Open-Meteo WMO Weather codes (Mapped to Emojis)
 const weatherCodes = {
-    0: { condition: 'Clear sky', icon: '☀️' },
-    1: { condition: 'Mainly clear', icon: '🌤️' },
-    2: { condition: 'Partly cloudy', icon: '⛅' },
-    3: { condition: 'Overcast', icon: '☁️' },
-    45: { condition: 'Fog', icon: '🌫️' },
-    48: { condition: 'Depositing rime fog', icon: '🌫️' },
-    51: { condition: 'Light drizzle', icon: '🌧️' },
-    53: { condition: 'Moderate drizzle', icon: '🌧️' },
-    55: { condition: 'Dense drizzle', icon: '🌧️' },
-    61: { condition: 'Slight rain', icon: '🌧️' },
-    63: { condition: 'Moderate rain', icon: '🌧️' },
-    65: { condition: 'Heavy rain', icon: '🌧️' },
-    71: { condition: 'Slight snow', icon: '❄️' },
-    73: { condition: 'Moderate snow', icon: '❄️' },
-    75: { condition: 'Heavy snow', icon: '❄️' },
-    77: { condition: 'Snow grains', icon: '❄️' },
-    80: { condition: 'Slight rain showers', icon: '🌦️' },
-    81: { condition: 'Moderate rain showers', icon: '🌦️' },
-    82: { condition: 'Violent rain showers', icon: '🌦️' },
-    85: { condition: 'Slight snow showers', icon: '🌨️' },
-    86: { condition: 'Heavy snow showers', icon: '🌨️' },
-    95: { condition: 'Thunderstorm', icon: '⛈️' },
-    96: { condition: 'Thunderstorm with slight hail', icon: '⛈️' },
-    99: { condition: 'Thunderstorm with heavy hail', icon: '⛈️' }
+    0: { condition: 'Clear sky', icon: '☀️', nightIcon: '🌙' },
+    1: { condition: 'Mainly clear', icon: '🌤️', nightIcon: '🌙' },
+    2: { condition: 'Partly cloudy', icon: '⛅', nightIcon: '☁️' },
+    3: { condition: 'Overcast', icon: '☁️', nightIcon: '☁️' },
+    45: { condition: 'Fog', icon: '🌫️', nightIcon: '🌫️' },
+    48: { condition: 'Depositing rime fog', icon: '🌫️', nightIcon: '🌫️' },
+    51: { condition: 'Light drizzle', icon: '🌧️', nightIcon: '🌧️' },
+    53: { condition: 'Moderate drizzle', icon: '🌧️', nightIcon: '🌧️' },
+    55: { condition: 'Dense drizzle', icon: '🌧️', nightIcon: '🌧️' },
+    61: { condition: 'Slight rain', icon: '🌧️', nightIcon: '🌧️' },
+    63: { condition: 'Moderate rain', icon: '🌧️', nightIcon: '🌧️' },
+    65: { condition: 'Heavy rain', icon: '🌧️', nightIcon: '🌧️' },
+    71: { condition: 'Slight snow', icon: '❄️', nightIcon: '❄️' },
+    73: { condition: 'Moderate snow', icon: '❄️', nightIcon: '❄️' },
+    75: { condition: 'Heavy snow', icon: '❄️', nightIcon: '❄️' },
+    77: { condition: 'Snow grains', icon: '❄️', nightIcon: '❄️' },
+    80: { condition: 'Slight rain showers', icon: '🌦️', nightIcon: '🌧️' },
+    81: { condition: 'Moderate rain showers', icon: '🌦️', nightIcon: '🌧️' },
+    82: { condition: 'Violent rain showers', icon: '🌦️', nightIcon: '🌧️' },
+    85: { condition: 'Slight snow showers', icon: '🌨️', nightIcon: '🌨️' },
+    86: { condition: 'Heavy snow showers', icon: '🌨️', nightIcon: '🌨️' },
+    95: { condition: 'Thunderstorm', icon: '⛈️', nightIcon: '⛈️' },
+    96: { condition: 'Thunderstorm with slight hail', icon: '⛈️', nightIcon: '⛈️' },
+    99: { condition: 'Thunderstorm with heavy hail', icon: '⛈️', nightIcon: '⛈️' }
 };
 
 const funWeatherDescriptions = {
@@ -124,7 +124,34 @@ const funWeatherDescriptions = {
     99: 'Wild storm with heavy hail!'
 };
 
-const defaultWeather = { condition: 'Unknown', icon: '❓' };
+const defaultWeather = { condition: 'Unknown', icon: '❓', nightIcon: '❓' };
+
+// Day/Night helper: determines if a given time is nighttime based on sunrise/sunset
+function isNighttime(dateStr, dailyData) {
+    if (!dailyData || !dailyData.sunrise || !dailyData.sunset) return false;
+    const dateObj = new Date(dateStr);
+    const dateOnly = dateStr.substring(0, 10); // "YYYY-MM-DD"
+    
+    // Find the matching day in daily data
+    for (let d = 0; d < dailyData.time.length; d++) {
+        if (dailyData.time[d] === dateOnly) {
+            const sunrise = new Date(dailyData.sunrise[d]);
+            const sunset = new Date(dailyData.sunset[d]);
+            return dateObj < sunrise || dateObj >= sunset;
+        }
+    }
+    // If no matching day found, use a simple heuristic (before 6 AM or after 9 PM)
+    const hour = dateObj.getHours();
+    return hour < 6 || hour >= 21;
+}
+
+function getWeatherIcon(weatherCode, dateStr, dailyData) {
+    const info = weatherCodes[weatherCode] || defaultWeather;
+    if (isNighttime(dateStr, dailyData)) {
+        return info.nightIcon || info.icon;
+    }
+    return info.icon;
+}
 
 // Helpers
 const formatHour = (dateString) => {
@@ -165,8 +192,8 @@ const getWindDirectionStr = (degrees) => {
 
 // Fetch Weather from Open-Meteo
 async function getWeather() {
-    const gemUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&models=gem_seamless&timezone=auto`;
-    const ecmwfUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&models=ecmwf_ifs025&timezone=auto&forecast_days=10`;
+    const gemUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&models=gem_seamless&timezone=auto`;
+    const ecmwfUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&models=ecmwf_ifs025&timezone=auto&forecast_days=10`;
     
     const [gemRes, ecmwfRes] = await Promise.all([fetch(gemUrl), fetch(ecmwfUrl)]);
     
@@ -193,6 +220,7 @@ function renderMeteogram(gemData, ecmwfData) {
     const temperatures = [];
     const precipitations = [];
     const icons = [];
+    const midnightIndices = []; // Track midnight positions for vertical lines
     
     let currentHourIdx = 0;
     for (let i = 0; i < hourlyTime.length; i++) {
@@ -216,15 +244,13 @@ function renderMeteogram(gemData, ecmwfData) {
         
         // Push data
         const dateObj = new Date(timeStr);
-        // Label formatting
+        const plotIndex = i - currentHourIdx;
+        // Track midnight boundaries for vertical lines and day labels
         const isMidnight = dateObj.getHours() === 0;
-        if (isMidnight || i === currentHourIdx) {
-             labels.push(formatShortDate(timeStr));
-        } else if (dateObj.getHours() % 12 === 0) {
-             labels.push(formatHour(timeStr));
-        } else {
-             labels.push('');
+        if (isMidnight) {
+             midnightIndices.push({ index: plotIndex, dayName: getLongDay(timeStr) });
         }
+        labels.push('');
         
         const tArr = sourceData.hourly.temperature_2m;
         temperatures.push(tArr ? convertTemp(tArr[i]) : 0);
@@ -233,7 +259,8 @@ function renderMeteogram(gemData, ecmwfData) {
         precipitations.push(pArr ? (pArr[i] || 0) : 0);
         
         const wCode = sourceData.hourly.weather_code ? sourceData.hourly.weather_code[i] : 0;
-        const iconName = weatherCodes[wCode] ? weatherCodes[wCode].icon : 'help';
+        const dailyForIcon = useGem ? gemData.daily : ecmwfData.daily;
+        const iconName = getWeatherIcon(wCode, timeStr, dailyForIcon);
         
         if (dateObj.getHours() % 6 === 0) {
             icons.push(iconName);
@@ -241,6 +268,9 @@ function renderMeteogram(gemData, ecmwfData) {
             icons.push(null);
         }
     }
+
+    // Capture the starting day name (the partial first day)
+    const startDayName = getLongDay(hourlyTime[currentHourIdx]);
 
     if (meteogramChartInstance) {
         meteogramChartInstance.destroy();
@@ -251,6 +281,8 @@ function renderMeteogram(gemData, ecmwfData) {
         data: {
             labels: labels,
             weatherIcons: icons,
+            midnightIndices: midnightIndices,
+            startDayName: startDayName,
             datasets: [
                 {
                     label: `Temperature (°${currentUnit})`,
@@ -277,7 +309,8 @@ function renderMeteogram(gemData, ecmwfData) {
         options: {
             layout: {
                 padding: {
-                    top: 40
+                    top: 40,
+                    bottom: 24
                 }
             },
             responsive: true,
@@ -307,15 +340,7 @@ function renderMeteogram(gemData, ecmwfData) {
                         display: false
                     },
                     ticks: {
-                        maxRotation: 0,
-                        autoSkip: false,
-                        callback: function(val, index) {
-                            return labels[index] !== '' ? labels[index] : null;
-                        },
-                        font: {
-                            family: 'Manrope',
-                            size: 10
-                        }
+                        display: false
                     }
                 },
                 y: {
@@ -349,6 +374,55 @@ function renderMeteogram(gemData, ecmwfData) {
             }
         },
         plugins: [{
+            id: 'midnightLinesAndLabelsPlugin',
+            beforeDatasetsDraw(chart) {
+                const { ctx, data, chartArea, scales } = chart;
+                const entries = data.midnightIndices;
+                if (!entries || entries.length === 0) return;
+                
+                const xScale = scales.x;
+                
+                // Draw vertical dashed lines at midnight
+                ctx.save();
+                ctx.strokeStyle = '#cbd5e1'; // slate-300
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([6, 4]);
+                
+                const midnightXPositions = entries.map(e => xScale.getPixelForValue(e.index));
+                midnightXPositions.forEach(x => {
+                    ctx.beginPath();
+                    ctx.moveTo(x, chartArea.top);
+                    ctx.lineTo(x, chartArea.bottom);
+                    ctx.stroke();
+                });
+                ctx.restore();
+                
+                // Draw day labels centered between midnight lines
+                ctx.save();
+                ctx.font = 'bold 11px Manrope, sans-serif';
+                ctx.fillStyle = '#334155'; // slate-700
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                
+                const labelY = chartArea.bottom + 8;
+                
+                // First partial day: from chart left edge to first midnight
+                if (midnightXPositions.length > 0) {
+                    const firstCenterX = (chartArea.left + midnightXPositions[0]) / 2;
+                    ctx.fillText(data.startDayName || 'Today', firstCenterX, labelY);
+                }
+                
+                // Each subsequent day: between consecutive midnight lines
+                for (let i = 0; i < entries.length; i++) {
+                    const leftX = midnightXPositions[i];
+                    const rightX = (i < midnightXPositions.length - 1) ? midnightXPositions[i + 1] : chartArea.right;
+                    const centerX = (leftX + rightX) / 2;
+                    ctx.fillText(entries[i].dayName, centerX, labelY);
+                }
+                
+                ctx.restore();
+            }
+        }, {
             id: 'weatherIconsPlugin',
             afterDatasetsDraw(chart) {
                 const { ctx, data } = chart;
@@ -391,7 +465,10 @@ function updateWeatherCard(data) {
             feelsLikeEl.textContent = `Feels like: ${Math.round(convertTemp(current.apparent_temperature))}°`;
         }
         document.getElementById('current-condition').textContent = weatherInfo.condition;
-        document.getElementById('current-icon').textContent = weatherInfo.icon;
+        // Build a local time string matching Open-Meteo's format (YYYY-MM-DDTHH:MM)
+        const _now = new Date();
+        const localTimeStr = `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}-${String(_now.getDate()).padStart(2,'0')}T${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
+        document.getElementById('current-icon').textContent = getWeatherIcon(wCode, localTimeStr, daily);
         
         const high = daily.temperature_2m_max ? Math.round(convertTemp(daily.temperature_2m_max[0])) : '--';
         const low = daily.temperature_2m_min ? Math.round(convertTemp(daily.temperature_2m_min[0])) : '--';
@@ -465,6 +542,7 @@ function updateWeatherCard(data) {
             const temp = Math.round(convertTemp(hourly.temperature_2m[i]));
             const hwCode = hourly.weather_code[i];
             const hwInfo = weatherCodes[hwCode] || defaultWeather;
+            const hwIcon = getWeatherIcon(hwCode, dateStr, daily);
             const isNow = i === currentHourIdx;
 
             const hourEl = document.createElement('div');
@@ -473,14 +551,14 @@ function updateWeatherCard(data) {
                 hourEl.className = 'min-w-[120px] bg-primary text-white p-stack-lg rounded-2xl flex flex-col items-center gap-stack-md shadow-lg scale-105';
                 hourEl.innerHTML = `
                     <span class="font-label-caps opacity-70">NOW</span>
-                    <span class="text-3xl leading-none my-1 drop-shadow-sm">${hwInfo.icon}</span>
+                    <span class="text-3xl leading-none my-1 drop-shadow-sm">${hwIcon}</span>
                     <span class="font-headline-md text-lg">${temp}°</span>
                 `;
             } else {
                 hourEl.className = 'min-w-[120px] bg-white border border-slate-100 p-stack-lg rounded-2xl flex flex-col items-center gap-stack-md';
                 hourEl.innerHTML = `
                     <span class="font-label-caps text-slate-400">${formatHour(dateStr)}</span>
-                    <span class="text-3xl leading-none my-1">${hwInfo.icon}</span>
+                    <span class="text-3xl leading-none my-1">${hwIcon}</span>
                     <span class="font-headline-md text-lg">${temp}°</span>
                 `;
             }
