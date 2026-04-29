@@ -1033,6 +1033,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     initializeDashboard();
+    // Geolocation button
+    const btnLocateMe = document.getElementById('btn-locate-me');
+    if (btnLocateMe) {
+        btnLocateMe.addEventListener('click', getUserLocation);
+    }
 });
 
 async function fetchCitySuggestions(query) {
@@ -1097,6 +1102,55 @@ async function fetchCitySuggestions(query) {
     } catch(err) {
         console.error("Error fetching suggestions:", err);
     }
+}
+
+async function getUserLocation() {
+    if (!navigator.geolocation) {
+        showError("Geolocation is not supported by your browser");
+        return;
+    }
+
+    loadingSpinner.classList.remove('hidden');
+    weatherMain.classList.add('opacity-50');
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        try {
+            // Reverse Geocode using BigDataCloud (Free, No Key)
+            const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+            const geoData = await res.json();
+            
+            const cityName = geoData.city || geoData.locality || "Current Location";
+            const countryCode = geoData.countryCode;
+            
+            await selectCity({
+                name: cityName,
+                latitude: latitude,
+                longitude: longitude,
+                country_code: countryCode,
+                id: null
+            });
+        } catch (err) {
+            console.error("Reverse geocoding failed:", err);
+            // Fallback if reverse geocode fails
+            await selectCity({
+                name: "Current Location",
+                latitude: latitude,
+                longitude: longitude,
+                country_code: null,
+                id: null
+            });
+        }
+        // Success path: selectCity calls initializeDashboard which handles spinner, 
+        // but we must manually clear the opacity we added here.
+        weatherMain.classList.remove('opacity-50');
+    }, (error) => {
+        console.error("Geolocation error:", error);
+        loadingSpinner.classList.add('hidden');
+        weatherMain.classList.remove('opacity-50');
+        showError("Unable to retrieve your location. Please check permissions.");
+    });
 }
 
 async function selectCity(city) {
