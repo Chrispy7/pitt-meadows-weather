@@ -17,6 +17,7 @@ function calculateDisplayHourlyCount() {
 // State
 let currentUnit = 'C';
 let weatherDataCache = null;
+let currentModel = 'gem_seamless';
 let displayHourlyCount = calculateDisplayHourlyCount();
 let searchTimeout = null;
 
@@ -190,38 +191,116 @@ const getWindDirectionStr = (degrees) => {
     return arr[(val % 16)];
 };
 
+const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+};
+
+const getAqiDescription = (aqi) => {
+    if (aqi <= 50) return { text: 'GOOD', color: 'text-green-600' };
+    if (aqi <= 100) return { text: 'MODERATE', color: 'text-yellow-600' };
+    if (aqi <= 150) return { text: 'UNHEALTHY (SG)', color: 'text-orange-500' };
+    if (aqi <= 200) return { text: 'UNHEALTHY', color: 'text-red-500' };
+    if (aqi <= 300) return { text: 'VERY UNHEALTHY', color: 'text-purple-600' };
+    return { text: 'HAZARDOUS', color: 'text-rose-900' };
+};
+
+function getModelData(weatherData, modelKey) {
+    if (!weatherData) return null;
+    
+    // If the key is missing from multi-model response, fall back to ECMWF (the most reliable)
+    const suffix = `_${modelKey}`;
+    const h = weatherData.hourly;
+    const d = weatherData.daily;
+
+    // Check if hourly data exists for this model
+    if (!h || !h[`temperature_2m${suffix}`]) {
+        // Fallback to ECMWF if the requested model data is missing
+        if (modelKey !== 'ecmwf_ifs') return getModelData(weatherData, 'ecmwf_ifs');
+        return weatherData;
+    }
+    
+    return {
+        current: weatherData.current,
+        hourly: {
+            time: h.time,
+            temperature_2m: h[`temperature_2m${suffix}`],
+            precipitation: h[`precipitation${suffix}`],
+            weather_code: h[`weather_code${suffix}`],
+            visibility: h[`visibility${suffix}`]
+        },
+        daily: {
+            time: d.time,
+            temperature_2m_max: d[`temperature_2m_max${suffix}`],
+            temperature_2m_min: d[`temperature_2m_min${suffix}`],
+            precipitation_sum: d[`precipitation_sum${suffix}`],
+            precipitation_probability_max: d[`precipitation_probability_max${suffix}`],
+            weather_code: d[`weather_code${suffix}`],
+            sunrise: d[`sunrise${suffix}`],
+            sunset: d[`sunset${suffix}`]
+        }
+    };
+}
+
 // Fetch Weather from Open-Meteo
 async function getWeather() {
-    const gemUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&models=gem_seamless&timezone=auto`;
-    const ecmwfUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&hourly=temperature_2m,precipitation,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&models=ecmwf_ifs025&timezone=auto&forecast_days=10`;
+    const modelKeys = [
+        "gem_seamless", "gem_global", "gem_regional", "gem_hrdps_continental", "gem_hrdps_west",
+        "ecmwf_ifs", "ecmwf_aifs025", "gfs_seamless",
+        "ncep_nbm_conus", "gfs_graphcast025", "ncep_aigfs025", "ncep_hgefs025_ensemble_mean",
+        "ncep_hrrr_conus", "ncep_nam_conus"
+    ];
+    const modelsParam = modelKeys.join(",");
     
-    const [gemRes, ecmwfRes] = await Promise.all([fetch(gemUrl), fetch(ecmwfUrl)]);
+    // Core parameters for all models
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&models=${modelsParam}&timezone=auto&forecast_days=10`;
+    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${currentLat}&longitude=${currentLon}&current=us_aqi&timezone=auto`;
     
-    if (!gemRes.ok || !ecmwfRes.ok) throw new Error(`Failed to fetch weather data`);
+    const [weatherRes, aqiRes] = await Promise.all([
+        fetch(weatherUrl),
+        fetch(aqiUrl)
+    ]);
     
-    const gemData = await gemRes.json();
-    const ecmwfData = await ecmwfRes.json();
+    if (!weatherRes.ok || !aqiRes.ok) throw new Error(`Failed to fetch weather/aqi data`);
     
-    return { gemData, ecmwfData };
+    const weatherData = await weatherRes.json();
+    const aqiData = await aqiRes.json();
+    
+    return { 
+        gemSeamlessData: getModelData(weatherData, "gem_seamless"),
+        gemGlobalData: getModelData(weatherData, "gem_global"),
+        gemRegionalData: getModelData(weatherData, "gem_regional"),
+        gemHrdpsData: getModelData(weatherData, "gem_hrdps_continental"),
+        gemHrdpsWestData: getModelData(weatherData, "gem_hrdps_west"),
+        ecmwfData: getModelData(weatherData, "ecmwf_ifs"),
+        ecmwfAifsData: getModelData(weatherData, "ecmwf_aifs025"),
+        gfsData: getModelData(weatherData, "gfs_seamless"),
+        nbmData: getModelData(weatherData, "ncep_nbm_conus"),
+        graphcastData: getModelData(weatherData, "gfs_graphcast025"),
+        aiGfsData: getModelData(weatherData, "ncep_aigfs025"),
+        hgefsData: getModelData(weatherData, "ncep_hgefs025_ensemble_mean"),
+        hrrrData: getModelData(weatherData, "ncep_hrrr_conus"),
+        namData: getModelData(weatherData, "ncep_nam_conus"),
+        aqiData 
+    };
 }
 
 let meteogramChartInstance = null;
 
-function renderMeteogram(gemData, ecmwfData) {
+function renderMeteogram(data) {
+    const { 
+        gemSeamlessData, gemGlobalData, gemRegionalData, gemHrdpsData, gemHrdpsWestData, 
+        ecmwfData, ecmwfAifsData, gfsData, 
+        nbmData, graphcastData, aiGfsData, hgefsData,
+        hrrrData, namData 
+    } = data;
     const canvas = document.getElementById('meteogram-chart');
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
 
-    // Merge data: GEM for first 3 days (72 hours from now roughly), ECMWF for the rest
-    const now = new Date();
     const hourlyTime = ecmwfData.hourly.time;
-    const labels = [];
-    const temperatures = [];
-    const precipitations = [];
-    const icons = [];
-    const midnightIndices = []; // Track midnight positions for vertical lines
-    
+    const now = new Date();
     let currentHourIdx = 0;
     for (let i = 0; i < hourlyTime.length; i++) {
         if (new Date(hourlyTime[i]) >= now) {
@@ -229,18 +308,45 @@ function renderMeteogram(gemData, ecmwfData) {
             break;
         }
     }
+
+    const labels = [];
+    const temperatures = [];
+    const precipitations = [];
+    const icons = [];
+    const midnightIndices = []; // Track midnight positions for vertical lines
     
-    // We want to plot the next 10 days (240 hours approx)
     const hoursToPlot = Math.min(240, hourlyTime.length - currentHourIdx);
     
     for (let i = currentHourIdx; i < currentHourIdx + hoursToPlot; i++) {
         const timeStr = hourlyTime[i];
         
-        // Find if this hour is within the first 3 days
-        const hoursFromNow = i - currentHourIdx;
-        const useGem = hoursFromNow < 72 && i < gemData.hourly.time.length;
+        // Model Selection Logic
+        let sourceData;
+        if (currentModel === 'gem_seamless') sourceData = gemSeamlessData;
+        else if (currentModel === 'gem_global') sourceData = gemGlobalData;
+        else if (currentModel === 'gem_regional') sourceData = gemRegionalData;
+        else if (currentModel === 'gem_hrdps') sourceData = gemHrdpsData;
+        else if (currentModel === 'gem_hrdps_west') sourceData = gemHrdpsWestData;
+        else if (currentModel === 'ecmwf') sourceData = ecmwfData;
+        else if (currentModel === 'ecmwf_aifs') sourceData = ecmwfAifsData;
+        else if (currentModel === 'gfs') sourceData = gfsData;
+        else if (currentModel === 'ncep_nbm') sourceData = nbmData;
+        else if (currentModel === 'graphcast') sourceData = graphcastData;
+        else if (currentModel === 'ai_gfs') sourceData = aiGfsData;
+        else if (currentModel === 'hgefs') sourceData = hgefsData;
+        else if (currentModel === 'hrrr') sourceData = hrrrData;
+        else if (currentModel === 'nam') sourceData = namData;
+        else {
+            // Seamless: GEM for first 3 days (72h), ECMWF for the rest
+            const hoursFromNow = i - currentHourIdx;
+            const useGem = hoursFromNow < 72 && i < gemData.hourly.time.length;
+            sourceData = useGem ? gemData : ecmwfData;
+        }
         
-        const sourceData = useGem ? gemData : ecmwfData;
+        // Fallback check: if model data ends (like HRRR), use ECMWF
+        if (!sourceData.hourly.temperature_2m[i] && i < ecmwfData.hourly.temperature_2m.length) {
+            sourceData = ecmwfData;
+        }
         
         // Push data
         const dateObj = new Date(timeStr);
@@ -259,7 +365,7 @@ function renderMeteogram(gemData, ecmwfData) {
         precipitations.push(pArr ? (pArr[i] || 0) : 0);
         
         const wCode = sourceData.hourly.weather_code ? sourceData.hourly.weather_code[i] : 0;
-        const dailyForIcon = useGem ? gemData.daily : ecmwfData.daily;
+        const dailyForIcon = sourceData.daily || ecmwfData.daily;
         const iconName = getWeatherIcon(wCode, timeStr, dailyForIcon);
         
         if (dateObj.getHours() % 6 === 0) {
@@ -447,14 +553,36 @@ function renderMeteogram(gemData, ecmwfData) {
 
 // Update UI
 function updateWeatherCard(data) {
-    const gemData = data.gemData;
     const ecmwfData = data.ecmwfData;
+    
+    // Model Selection
+    let selectedData;
+    if (currentModel === 'gem_seamless') selectedData = data.gemSeamlessData;
+    else if (currentModel === 'gem_global') selectedData = data.gemGlobalData;
+    else if (currentModel === 'gem_regional') selectedData = data.gemRegionalData;
+    else if (currentModel === 'gem_hrdps') selectedData = data.gemHrdpsData;
+    else if (currentModel === 'gem_hrdps_west') selectedData = data.gemHrdpsWestData;
+    else if (currentModel === 'ecmwf') selectedData = data.ecmwfData;
+    else if (currentModel === 'ecmwf_aifs') selectedData = data.ecmwfAifsData;
+    else if (currentModel === 'gfs') selectedData = data.gfsData;
+    else if (currentModel === 'ncep_nbm') selectedData = data.nbmData;
+    else if (currentModel === 'graphcast') selectedData = data.graphcastData;
+    else if (currentModel === 'ai_gfs') selectedData = data.aiGfsData;
+    else if (currentModel === 'hgefs') selectedData = data.hgefsData;
+    else if (currentModel === 'hrrr') selectedData = data.hrrrData;
+    else if (currentModel === 'nam') selectedData = data.namData;
+    else selectedData = data.gemSeamlessData;
 
-    const current = gemData.current;
-    const daily = gemData.daily; // GEM daily
-    const hourly = gemData.hourly;
-    const wCode = current.weather_code;
+    // Use selected data, with ECMWF as fallback if a specific model's top-level object is missing
+    const current = selectedData.current || ecmwfData.current;
+    const daily = selectedData.daily || ecmwfData.daily;
+    const hourly = selectedData.hourly || ecmwfData.hourly;
+    
+    const wCode = current.weather_code !== undefined ? current.weather_code : ecmwfData.current.weather_code;
     const weatherInfo = weatherCodes[wCode] || defaultWeather;
+
+    // Sunrise / Sunset Source (Astronomical data fallback)
+    const sunSource = (daily && daily.sunrise && daily.sunrise[0]) ? daily : ecmwfData.daily;
 
     // --- Current Hero ---
     const currTempEl = document.getElementById('current-temp');
@@ -468,7 +596,7 @@ function updateWeatherCard(data) {
         // Build a local time string matching Open-Meteo's format (YYYY-MM-DDTHH:MM)
         const _now = new Date();
         const localTimeStr = `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}-${String(_now.getDate()).padStart(2,'0')}T${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
-        document.getElementById('current-icon').textContent = getWeatherIcon(wCode, localTimeStr, daily);
+        document.getElementById('current-icon').textContent = getWeatherIcon(wCode, localTimeStr, sunSource);
         
         const high = daily.temperature_2m_max ? Math.round(convertTemp(daily.temperature_2m_max[0])) : '--';
         const low = daily.temperature_2m_min ? Math.round(convertTemp(daily.temperature_2m_min[0])) : '--';
@@ -478,6 +606,17 @@ function updateWeatherCard(data) {
         const precipProb = daily.precipitation_probability_max ? (daily.precipitation_probability_max[0] || 0) : 0;
         document.getElementById('current-precip').textContent = `Precip: ${precipProb}%`;
         document.getElementById('current-wind').textContent = `Wind: ${Math.round(current.wind_speed_10m)}km/h ${getWindDirectionStr(current.wind_direction_10m)}`;
+        
+        // Humidity and Pressure in Hero
+        const currentHumEl = document.getElementById('current-humidity');
+        if (currentHumEl) {
+            currentHumEl.textContent = `Humidity: ${Math.round(current.relative_humidity_2m)}%`;
+        }
+        const currentPresEl = document.getElementById('current-pressure');
+        if (currentPresEl) {
+            const pressureKpa = (current.surface_pressure / 10).toFixed(1);
+            currentPresEl.textContent = `Pressure: ${pressureKpa} kPa`;
+        }
         
         // Weather Warning
         const warningBtn = document.getElementById('current-warning-btn');
@@ -497,21 +636,78 @@ function updateWeatherCard(data) {
     }
 
     // --- Stats Grid Mini ---
-    const statHumEl = document.getElementById('stat-humidity');
-    if (statHumEl) {
-        statHumEl.textContent = `${Math.round(current.relative_humidity_2m)}%`;
-        document.getElementById('stat-humidity-bar').style.width = `${current.relative_humidity_2m}%`;
-        
+    const uvEl = document.getElementById('stat-uv');
+    if (uvEl) {
         // Open-Meteo GEM doesn't provide UV easily in this model, so leave placeholder or set to 4
-        document.getElementById('stat-uv').textContent = `4`; 
+        const uvValue = 4;
+        uvEl.textContent = uvValue; 
+        const uvDescEl = document.getElementById('stat-uv-desc');
+        if (uvDescEl) {
+            if (uvValue < 3) uvDescEl.textContent = 'LOW';
+            else if (uvValue < 6) uvDescEl.textContent = 'MODERATE';
+            else if (uvValue < 8) uvDescEl.textContent = 'HIGH';
+            else if (uvValue < 11) uvDescEl.textContent = 'VERY HIGH';
+            else uvDescEl.textContent = 'EXTREME';
+        }
         
-        // Visibility is in meters, convert to km
-        const visibilityKm = (current.visibility / 1000).toFixed(1);
+        // Visibility is in meters, convert to km (handle nulls with cross-model fallback)
+        let visValue = current.visibility;
+        
+        // Find the index for the current hour (needed for hourly fallback)
+        const _nowVis = new Date();
+        let hIdxVis = 0;
+        const timeArray = (hourly && hourly.time) ? hourly.time : (data.ecmwfData && data.ecmwfData.hourly ? data.ecmwfData.hourly.time : []);
+        for (let i=0; i<timeArray.length; i++) {
+            if (new Date(timeArray[i]) >= _nowVis) {
+                hIdxVis = i;
+                break;
+            }
+        }
+
+        if (visValue === null || visValue === undefined) {
+            // 1. Try selected model's hourly visibility
+            if (hourly && hourly.visibility && hourly.visibility[hIdxVis] !== null && hourly.visibility[hIdxVis] !== undefined) {
+                visValue = hourly.visibility[hIdxVis];
+            }
+            // 2. Fallback to GFS hourly visibility (most models don't provide current visibility in multi-model mode)
+            else if (data.gfsData && data.gfsData.hourly && data.gfsData.hourly.visibility && data.gfsData.hourly.visibility[hIdxVis] !== null) {
+                visValue = data.gfsData.hourly.visibility[hIdxVis];
+            }
+        }
+        
+        const visibilityKm = (visValue !== undefined && visValue !== null) ? (visValue / 1000).toFixed(1) : '--';
         document.getElementById('stat-visibility').textContent = `${visibilityKm} km`;
-        
-        // Pressure in hPa to kPa (1 hPa = 0.1 kPa)
-        const pressureKpa = (current.surface_pressure / 10).toFixed(1);
-        document.getElementById('stat-pressure').textContent = `${pressureKpa}`;
+
+        // Sunrise / Sunset (Already defined sunSource above)
+        try {
+            if (sunSource && sunSource.sunrise && sunSource.sunrise[0]) {
+                const sunriseTime = formatTime(sunSource.sunrise[0]);
+                const sunsetTime = formatTime(sunSource.sunset[0]);
+                
+                const sunriseEl = document.getElementById('stat-sunrise');
+                const sunsetEl = document.getElementById('stat-sunset');
+                
+                if (sunriseEl) sunriseEl.textContent = sunriseTime;
+                if (sunsetEl) sunsetEl.textContent = sunsetTime;
+            } else {
+                console.warn("Sunrise/Sunset data missing in both selected model and ECMWF fallback.");
+            }
+        } catch (sunErr) {
+            console.error("Error formatting sunrise/sunset:", sunErr);
+        }
+
+        // Air Quality
+        if (data.aqiData && data.aqiData.current) {
+            const aqi = data.aqiData.current.us_aqi;
+            const aqiInfo = getAqiDescription(aqi);
+            const aqiEl = document.getElementById('stat-aqi');
+            const aqiDescEl = document.getElementById('stat-aqi-desc');
+            if (aqiEl) aqiEl.textContent = aqi;
+            if (aqiDescEl) {
+                aqiDescEl.textContent = aqiInfo.text;
+                aqiDescEl.className = `text-[10px] font-bold mt-1 ${aqiInfo.color}`;
+            }
+        }
     }
 
     // --- Hourly Forecast ---
@@ -534,13 +730,26 @@ function updateWeatherCard(data) {
             }
         }
         
-        // Show next 12 hours
+        // Show next N hours
         for (let i = currentHourIdx; i < currentHourIdx + displayHourlyCount; i++) {
-            if (i >= hourly.time.length) break;
+            // Check if selected model has data for this specific hour
+            let hSource = hourly;
+            let idx = i;
             
-            const dateStr = hourly.time[i];
-            const temp = Math.round(convertTemp(hourly.temperature_2m[i]));
-            const hwCode = hourly.weather_code[i];
+            // If the selected model ends or has null data for this hour, fallback to ECMWF
+            if (i >= hourly.time.length || hourly.temperature_2m[i] === null) {
+                hSource = ecmwfData.hourly;
+                // Find matching index in ECMWF by comparing timestamps
+                const targetTime = hourly.time[i] || (new Date(now.getTime() + (i-currentHourIdx)*3600000)).toISOString().slice(0,16);
+                idx = ecmwfData.hourly.time.indexOf(targetTime);
+                if (idx === -1) idx = i; // Fallback to index if timestamp matching fails
+            }
+            
+            if (idx >= hSource.time.length) break;
+            
+            const dateStr = hSource.time[idx];
+            const temp = Math.round(convertTemp(hSource.temperature_2m[idx]));
+            const hwCode = hSource.weather_code[idx];
             const hwInfo = weatherCodes[hwCode] || defaultWeather;
             const hwIcon = getWeatherIcon(hwCode, dateStr, daily);
             const isNow = i === currentHourIdx;
@@ -567,7 +776,7 @@ function updateWeatherCard(data) {
     }
 
     // --- Meteogram ---
-    renderMeteogram(gemData, ecmwfData);
+    renderMeteogram(data);
 
     // --- 10-Day Forecast ---
     const tenDayContainer = document.getElementById('ten-day-forecast-container');
@@ -578,8 +787,31 @@ function updateWeatherCard(data) {
         const totalDays = Math.min(ecmwfDaily.time.length, 10);
         
         for (let i = 0; i < totalDays; i++) {
-            const isGem = i < 3;
-            const sourceDaily = isGem ? daily : ecmwfDaily;
+            // Model Selection Logic for Daily Row
+            let sourceDaily;
+            if (currentModel === 'gem_seamless') sourceDaily = data.gemSeamlessData.daily;
+            else if (currentModel === 'gem_global') sourceDaily = data.gemGlobalData.daily;
+            else if (currentModel === 'gem_regional') sourceDaily = data.gemRegionalData.daily;
+            else if (currentModel === 'gem_hrdps') sourceDaily = data.gemHrdpsData.daily;
+            else if (currentModel === 'gem_hrdps_west') sourceDaily = data.gemHrdpsWestData.daily;
+            else if (currentModel === 'ecmwf') sourceDaily = ecmwfDaily;
+            else if (currentModel === 'ecmwf_aifs') sourceDaily = data.ecmwfAifsData.daily;
+            else if (currentModel === 'gfs') sourceDaily = data.gfsData.daily;
+            else if (currentModel === 'ncep_nbm') sourceDaily = data.nbmData.daily;
+            else if (currentModel === 'graphcast') sourceDaily = data.graphcastData.daily;
+            else if (currentModel === 'ai_gfs') sourceDaily = data.aiGfsData.daily;
+            else if (currentModel === 'hgefs') sourceDaily = data.hgefsData.daily;
+            else if (currentModel === 'hrrr') sourceDaily = data.hrrrData.daily;
+            else if (currentModel === 'nam') sourceDaily = data.namData.daily;
+            else {
+                // Seamless
+                sourceDaily = i < 3 ? daily : ecmwfDaily;
+            }
+            
+            // Fallback for daily (like HRRR ending early)
+            if (!sourceDaily.temperature_2m_max[i] && i < ecmwfDaily.temperature_2m_max.length) {
+                sourceDaily = ecmwfDaily;
+            }
             
             if (i >= sourceDaily.time.length) continue;
 
@@ -597,7 +829,27 @@ function updateWeatherCard(data) {
 
             // Night uses the next day's 2 AM weather code as an approximation
             let nightCode = dCode; // Fallback
-            const sourceHourly = isGem ? hourly : ecmwfData.hourly;
+            
+            // Correct sourceHourly based on selection
+            let sourceHourly = hourly;
+            if (currentModel === 'gem_seamless') sourceHourly = data.gemSeamlessData.hourly;
+            else if (currentModel === 'gem_global') sourceHourly = data.gemGlobalData.hourly;
+            else if (currentModel === 'gem_regional') sourceHourly = data.gemRegionalData.hourly;
+            else if (currentModel === 'gem_hrdps') sourceHourly = data.gemHrdpsData.hourly;
+            else if (currentModel === 'gem_hrdps_west') sourceHourly = data.gemHrdpsWestData.hourly;
+            else if (currentModel === 'ecmwf') sourceHourly = ecmwfData.hourly;
+            else if (currentModel === 'ecmwf_aifs') sourceHourly = data.ecmwfAifsData.hourly;
+            else if (currentModel === 'gfs') sourceHourly = data.gfsData.hourly;
+            else if (currentModel === 'ncep_nbm') sourceHourly = data.nbmData.hourly;
+            else if (currentModel === 'graphcast') sourceHourly = data.graphcastData.hourly;
+            else if (currentModel === 'ai_gfs') sourceHourly = data.aiGfsData.hourly;
+            else if (currentModel === 'hgefs') sourceHourly = data.hgefsData.hourly;
+            else if (currentModel === 'hrrr') sourceHourly = data.hrrrData.hourly;
+            else if (currentModel === 'nam') sourceHourly = data.namData.hourly;
+            else {
+                 sourceHourly = i < 3 ? data.gemSeamlessData.hourly : ecmwfData.hourly;
+            }
+
             if (sourceHourly && sourceHourly.time) {
                 const [y, m, d] = dateStr.split('-');
                 const nextDay = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
@@ -709,6 +961,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-celsius')?.addEventListener('click', () => setUnit('C'));
     document.getElementById('btn-fahrenheit')?.addEventListener('click', () => setUnit('F'));
+    
+    setupCustomDropdown();
+
     document.getElementById('btn-full-24h')?.addEventListener('click', () => {
         displayHourlyCount = 24;
         if (weatherDataCache) {
@@ -917,4 +1172,71 @@ async function searchCity(cityName) {
         alert("Error searching city.");
         loadingSpinner.classList.add('hidden');
     }
+}
+function setupCustomDropdown() {
+    const wrapper = document.getElementById('model-select-wrapper');
+    const trigger = document.getElementById('model-select-trigger');
+    const label = document.getElementById('model-select-label');
+    const options = document.querySelectorAll('.custom-option');
+    const globalTooltip = document.getElementById('model-tooltip-global');
+
+    if (!wrapper || !trigger || !label || !globalTooltip) return;
+
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        wrapper.classList.toggle('open');
+    });
+
+    options.forEach(option => {
+        // Tooltip hover logic
+        option.addEventListener('mouseenter', () => {
+            const description = option.getAttribute('data-description');
+            if (description && window.innerWidth > 768) {
+                globalTooltip.textContent = description;
+                const rect = option.getBoundingClientRect();
+                
+                // Position tooltip to the left of the option
+                globalTooltip.style.top = `${rect.top + rect.height / 2}px`;
+                globalTooltip.style.left = `${rect.left - 20}px`;
+                globalTooltip.style.transform = `translate(-100%, -50%)`;
+                
+                globalTooltip.classList.add('visible');
+            }
+        });
+
+        option.addEventListener('mouseleave', () => {
+            globalTooltip.classList.remove('visible');
+        });
+
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const value = option.getAttribute('data-value');
+            const text = option.querySelector('span').textContent;
+            
+            currentModel = value;
+            label.textContent = text;
+            
+            // Update selected class
+            options.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            
+            wrapper.classList.remove('open');
+            globalTooltip.classList.remove('visible');
+            
+            if (weatherDataCache) {
+                updateWeatherCard(weatherDataCache);
+            }
+        });
+    });
+
+    // Close on click outside
+    document.addEventListener('click', () => {
+        wrapper.classList.remove('open');
+        globalTooltip.classList.remove('visible');
+    });
+
+    // Hide tooltip on scroll
+    document.querySelector('.custom-select-options')?.addEventListener('scroll', () => {
+        globalTooltip.classList.remove('visible');
+    });
 }
