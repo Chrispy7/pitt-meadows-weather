@@ -13,7 +13,7 @@
     gtag('config', 'G-R1ZTQNCC9Z');
   </script>
   <meta charset="utf-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;600;700;800&amp;display=swap"
     rel="stylesheet" />
@@ -27,6 +27,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="SkyCast Pro" />
   <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="icon-192.png" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script id="tailwind-config">
     tailwind.config = {
@@ -325,6 +328,14 @@
       padding: 2px;
       vertical-align: middle;
       margin: 0 4px;
+    }
+
+    /* Safe Area Padding for iOS */
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
   </style>
 </head>
@@ -669,8 +680,32 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('Service Worker registered', reg))
+          .then(reg => {
+            console.log('Service Worker registered', reg);
+            
+            // Handle updates
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New content is available, but wait for user or handle auto-refresh
+                  console.log('New content is available; please refresh.');
+                  // For a smoother experience, we can reload automatically if the user is not in the middle of something
+                  // location.reload(); 
+                }
+              });
+            });
+          })
           .catch(err => console.log('Service Worker registration failed', err));
+      });
+
+      // Reload when the new service worker takes control
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
       });
     }
 

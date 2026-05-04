@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skycast-pro-v1';
+const CACHE_NAME = 'skycast-pro-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -18,6 +18,8 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Caching app shell');
       return cache.addAll(ASSETS_TO_CACHE);
+    }).then(() => {
+      return self.skipWaiting();
     })
   );
 });
