@@ -3,6 +3,15 @@
 <html lang="en">
 
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R1ZTQNCC9Z"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-R1ZTQNCC9Z');
+  </script>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -146,14 +155,16 @@
     }
 
     .custom-select-trigger:hover {
-      background: #c3d4f5; /* Slightly darker than surface-container-highest */
+      background: #c3d4f5;
+      /* Slightly darker than surface-container-highest */
     }
 
     .custom-select-options {
       position: absolute;
       top: calc(100% + 8px);
       right: 0;
-      width: 280px; /* Back to 1 column width */
+      width: 280px;
+      /* Back to 1 column width */
       max-height: 400px;
       overflow-y: auto;
       background: rgba(255, 255, 255, 0.98);
@@ -176,9 +187,11 @@
     .custom-select-options::-webkit-scrollbar {
       width: 4px;
     }
+
     .custom-select-options::-webkit-scrollbar-track {
       background: transparent;
     }
+
     .custom-select-options::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 10px;
@@ -274,6 +287,7 @@
         left: 50%;
         transform: translateX(-50%) translateY(-10px);
       }
+
       #model-tooltip-global {
         display: none;
       }
@@ -315,7 +329,8 @@
         <h2 id="city-name-header-mobile" class="text-2xl font-bold text-on-surface flex items-center gap-2">Pitt Meadows
           <span id="city-flag-header-mobile" class="flex items-center" title="Canada"><img
               src="https://flagcdn.com/w40/ca.png" srcset="https://flagcdn.com/w80/ca.png 2x" alt="Canada"
-              class="inline-block h-5 w-auto rounded-sm shadow-sm"></span></h2>
+              class="inline-block h-5 w-auto rounded-sm shadow-sm"></span>
+        </h2>
       </div>
       <div class="flex items-center gap-6">
         <div class="relative flex items-center gap-2">
@@ -461,7 +476,8 @@
         <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <h3 class="font-headline-md text-headline-md text-on-surface">10-Day Weather Meteogram</h3>
           <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest hidden sm:inline">Model:</span>
+            <span
+              class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest hidden sm:inline">Model:</span>
             <div id="model-select-wrapper" class="custom-select-wrapper">
               <div id="model-select-trigger" class="custom-select-trigger">
                 <span id="model-select-label">GEM Seamless (Combined)</span>
@@ -469,50 +485,64 @@
               </div>
               <div id="model-select-options" class="custom-select-options">
                 <div class="optgroup-header">Canadian Models (GEM)</div>
-                <div class="custom-option selected" data-value="gem_seamless" data-description="Smart blend of all Canadian models. Uses HRDPS for short-range precision and GDPS for the long-range 10-day forecast.">
+                <div class="custom-option selected" data-value="gem_seamless"
+                  data-description="Smart blend of all Canadian models. Uses HRDPS for short-range precision and GDPS for the long-range 10-day forecast.">
                   <span>GEM Seamless (Combined)</span>
                 </div>
-                <div class="custom-option" data-value="gem_global" data-description="Environment Canada's global model (15km resolution). Solid 10-day general forecast.">
+                <div class="custom-option" data-value="gem_global"
+                  data-description="Environment Canada's global model (15km resolution). Solid 10-day general forecast.">
                   <span>GEM Global (GDPS)</span>
                 </div>
-                <div class="custom-option" data-value="gem_regional" data-description="Higher precision (10km) model optimized for North American terrain. Covers 3.5 days.">
+                <div class="custom-option" data-value="gem_regional"
+                  data-description="Higher precision (10km) model optimized for North American terrain. Covers 3.5 days.">
                   <span>GEM Regional (RDPS)</span>
                 </div>
-                <div class="custom-option" data-value="gem_hrdps" data-description="High-Resolution Deterministic Prediction System. Excellent for local storm and wind patterns.">
+                <div class="custom-option" data-value="gem_hrdps"
+                  data-description="High-Resolution Deterministic Prediction System. Excellent for local storm and wind patterns.">
                   <span>GEM HRDPS Continental</span>
                 </div>
-                <div class="custom-option" data-value="gem_hrdps_west" data-description="Ultra-high-resolution experimental model specifically for Western Canada. The ultimate local precision tool.">
+                <div class="custom-option" data-value="gem_hrdps_west"
+                  data-description="Ultra-high-resolution experimental model specifically for Western Canada. The ultimate local precision tool.">
                   <span>GEM HRDPS West (1km)</span>
                 </div>
 
                 <div class="optgroup-header">European Models</div>
-                <div class="custom-option" data-value="ecmwf" data-description="The gold standard high-resolution (9km) deterministic model. Widely considered the most accurate in the world.">
+                <div class="custom-option" data-value="ecmwf"
+                  data-description="The gold standard high-resolution (9km) deterministic model. Widely considered the most accurate in the world.">
                   <span>ECMWF (HRES)</span>
                 </div>
-                <div class="custom-option" data-value="ecmwf_aifs" data-description="ECMWF's new Artificial Intelligence Forecasting System. Extremely fast and showing remarkable long-range performance.">
+                <div class="custom-option" data-value="ecmwf_aifs"
+                  data-description="ECMWF's new Artificial Intelligence Forecasting System. Extremely fast and showing remarkable long-range performance.">
                   <span>ECMWF (AIFS - AI)</span>
                 </div>
 
                 <div class="optgroup-header">US Models</div>
-                <div class="custom-option" data-value="gfs" data-description="NOAA's flagship global model. Updated 4 times daily with deep atmospheric data.">
+                <div class="custom-option" data-value="gfs"
+                  data-description="NOAA's flagship global model. Updated 4 times daily with deep atmospheric data.">
                   <span>GFS (Global - USA)</span>
                 </div>
-                <div class="custom-option" data-value="ncep_nbm" data-description="National Blend of Models. A high-resolution blend of all available US and international models for peak accuracy.">
+                <div class="custom-option" data-value="ncep_nbm"
+                  data-description="National Blend of Models. A high-resolution blend of all available US and international models for peak accuracy.">
                   <span>NBM (National Blend)</span>
                 </div>
-                <div class="custom-option" data-value="graphcast" data-description="Google DeepMind's GraphCast AI model applied to GFS data. Exceptional at capturing long-range patterns.">
+                <div class="custom-option" data-value="graphcast"
+                  data-description="Google DeepMind's GraphCast AI model applied to GFS data. Exceptional at capturing long-range patterns.">
                   <span>GraphCast (AI - GFS)</span>
                 </div>
-                <div class="custom-option" data-value="ai_gfs" data-description="NOAA's AIGFS model. Next-generation AI-driven global forecasting at 0.25° resolution.">
+                <div class="custom-option" data-value="ai_gfs"
+                  data-description="NOAA's AIGFS model. Next-generation AI-driven global forecasting at 0.25° resolution.">
                   <span>AI GFS (AIGFS)</span>
                 </div>
-                <div class="custom-option" data-value="hgefs" data-description="High-Resolution GEFS Ensemble Mean. Provides a reliable average of 31 different forecast scenarios.">
+                <div class="custom-option" data-value="hgefs"
+                  data-description="High-Resolution GEFS Ensemble Mean. Provides a reliable average of 31 different forecast scenarios.">
                   <span>HGEFS (Ensemble Mean)</span>
                 </div>
-                <div class="custom-option" data-value="hrrr" data-description="High-Resolution Rapid Refresh. Updates hourly at 3km resolution for extreme short-term precision.">
+                <div class="custom-option" data-value="hrrr"
+                  data-description="High-Resolution Rapid Refresh. Updates hourly at 3km resolution for extreme short-term precision.">
                   <span>HRRR (Precision - USA)</span>
                 </div>
-                <div class="custom-option" data-value="nam" data-description="North American Mesoscale model. Detailed 12km resolution covering the next 84 hours.">
+                <div class="custom-option" data-value="nam"
+                  data-description="North American Mesoscale model. Detailed 12km resolution covering the next 84 hours.">
                   <span>NAM (Regional - USA)</span>
                 </div>
               </div>
