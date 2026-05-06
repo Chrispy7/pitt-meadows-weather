@@ -423,17 +423,8 @@ function renderMeteogram(data) {
         else if (currentModel === 'hgefs') sourceData = hgefsData;
         else if (currentModel === 'hrrr') sourceData = hrrrData;
         else if (currentModel === 'nam') sourceData = namData;
-        else {
-            // Seamless: GEM for first 3 days (72h), ECMWF for the rest
-            const hoursFromNow = i - currentHourIdx;
-            const useGem = hoursFromNow < 72 && i < gemSeamlessData.hourly.time.length;
-            sourceData = useGem ? gemSeamlessData : ecmwfData;
-        }
+        else sourceData = gemSeamlessData;
         
-        // Fallback check: ONLY if model is gem_seamless or specifically missing data unexpectedly
-        if (currentModel === 'gem_seamless' && !sourceData.hourly.temperature_2m[i] && i < ecmwfData.hourly.temperature_2m.length) {
-            sourceData = ecmwfData;
-        }
         
         // Push data
         const dateObj = new Date(timeStr);
@@ -451,12 +442,9 @@ function renderMeteogram(data) {
         const pArr = sourceData.hourly.precipitation;
         precipitations.push(pArr ? (pArr[i] || 0) : 0);
         
-        let wCode = (sourceData.hourly.weather_code && sourceData.hourly.weather_code[i] !== null) 
+        const wCode = (sourceData.hourly.weather_code && sourceData.hourly.weather_code[i] !== null) 
             ? sourceData.hourly.weather_code[i] 
-            : (ecmwfData.hourly.weather_code ? ecmwfData.hourly.weather_code[i] : 0);
-            
-        // Final fallback if both are null
-        if (wCode === null) wCode = 0;
+            : 0;
 
         const dailyForIcon = sourceData.daily || ecmwfData.daily;
         const iconName = getWeatherIcon(wCode, timeStr, dailyForIcon);
