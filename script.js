@@ -1111,26 +1111,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('btn-radar-precip')?.addEventListener('click', function() {
-        const iframe = document.getElementById('radar-iframe');
-        if(iframe) {
-            iframe.src = `https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=radar&product=radar&level=surface&lat=${currentLat}&lon=${currentLon}`;
-        }
-        this.className = "px-4 py-2 bg-surface-container rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors";
-        const btnWind = document.getElementById('btn-radar-wind');
-        if(btnWind) btnWind.className = "px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors";
-    });
-
-    document.getElementById('btn-radar-wind')?.addEventListener('click', function() {
-        const iframe = document.getElementById('radar-iframe');
-        if(iframe) {
-            iframe.src = `https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=8&overlay=wind&product=radar&level=surface&lat=${currentLat}&lon=${currentLon}`;
-        }
-        this.className = "px-4 py-2 bg-surface-container rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors";
-        const btnPrecip = document.getElementById('btn-radar-precip');
-        if(btnPrecip) btnPrecip.className = "px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-slate-50 transition-colors";
-    });
-    
     const searchInput = document.getElementById('city-search-input');
     const dropdown = document.getElementById('search-results-dropdown');
 
