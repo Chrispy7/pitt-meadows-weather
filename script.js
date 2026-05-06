@@ -59,16 +59,56 @@ function setUnit(unit) {
         }
     }
     
+    saveSettings();
+
     if (weatherDataCache) {
         updateWeatherCard(weatherDataCache);
     }
 }
 
 // Current Location Data
-let currentLat = 49.2238;
-let currentLon = -122.6893;
-let currentElevation = 12;
-let currentCityName = "Pitt Meadows";
+let currentLat = 49.2827;
+let currentLon = -123.1207;
+let currentElevation = 43;
+let currentCityName = "Vancouver";
+
+// Settings Persistence
+const STORAGE_KEY = 'weather_settings';
+
+function saveSettings() {
+    const settings = {
+        unit: currentUnit,
+        model: currentModel,
+        lat: currentLat,
+        lon: currentLon,
+        elevation: currentElevation,
+        cityName: currentCityName
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+}
+
+let hasSavedLocation = false;
+
+function loadSettings() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const s = JSON.parse(saved);
+            if (s.unit) currentUnit = s.unit;
+            if (s.model) currentModel = s.model;
+            if (s.lat !== undefined && s.cityName) {
+                currentLat = s.lat;
+                currentLon = s.lon;
+                if (s.elevation !== undefined) currentElevation = s.elevation;
+                currentCityName = s.cityName;
+                hasSavedLocation = true;
+            }
+        }
+    } catch (e) {
+        console.error('Error loading settings:', e);
+    }
+}
+loadSettings();
 
 // Open-Meteo WMO Weather codes (Mapped to Emojis)
 const weatherCodes = {
@@ -947,6 +987,34 @@ async function initializeDashboard() {
 
 // Load on startup
 document.addEventListener('DOMContentLoaded', () => {
+    // Sync UI with loaded settings
+    if (currentUnit === 'F') {
+        const btnC = document.getElementById('btn-celsius');
+        const btnF = document.getElementById('btn-fahrenheit');
+        if (btnC && btnF) {
+            btnF.className = 'px-3 py-1 bg-white shadow-sm rounded-full text-xs font-bold text-primary transition-colors';
+            btnC.className = 'px-3 py-1 text-xs font-bold text-outline hover:text-primary transition-colors';
+        }
+    }
+    const label = document.getElementById('model-select-label');
+    const options = document.querySelectorAll('.custom-option');
+    if (label && options.length > 0) {
+        options.forEach(opt => {
+            if (opt.getAttribute('data-value') === currentModel) {
+                opt.classList.add('selected');
+                label.textContent = opt.querySelector('span').textContent;
+            } else {
+                opt.classList.remove('selected');
+            }
+        });
+    }
+    const cityNameEl = document.getElementById('city-name-header');
+    if (cityNameEl && currentCityName !== "Vancouver") {
+        cityNameEl.innerHTML = `${currentCityName} <span id="city-flag-header" class="flex items-center"></span>`;
+        const cityNameMobileEl = document.getElementById('city-name-header-mobile');
+        if (cityNameMobileEl) cityNameMobileEl.innerHTML = `${currentCityName} <span id="city-flag-header-mobile" class="flex items-center"></span>`;
+    }
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -1032,11 +1100,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    initializeDashboard();
+    if (hasSavedLocation) {
+        initializeDashboard();
+    } else {
+        if (navigator.geolocation) {
+            getUserLocation(true);
+        } else {
+            initializeDashboard();
+        }
+    }
+    
     // Geolocation button
     const btnLocateMe = document.getElementById('btn-locate-me');
     if (btnLocateMe) {
-        btnLocateMe.addEventListener('click', getUserLocation);
+        btnLocateMe.addEventListener('click', () => getUserLocation(false));
+    }
+
+    // Settings dropdown
+    const btnSettings = document.getElementById('btn-settings');
+    const settingsDropdown = document.getElementById('settings-dropdown');
+    if (btnSettings && settingsDropdown) {
+        btnSettings.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsDropdown.classList.toggle('hidden');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!btnSettings.contains(e.target) && !settingsDropdown.contains(e.target)) {
+                settingsDropdown.classList.add('hidden');
+            }
+        });
     }
 });
 
@@ -1104,9 +1197,9 @@ async function fetchCitySuggestions(query) {
     }
 }
 
-async function getUserLocation() {
+async function getUserLocation(isAutoInit = false) {
     if (!navigator.geolocation) {
-        showError("Geolocation is not supported by your browser");
+        if (!isAutoInit) showError("Geolocation is not supported by your browser");
         return;
     }
 
@@ -1121,7 +1214,7 @@ async function getUserLocation() {
             const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
             const geoData = await res.json();
             
-            const cityName = geoData.city || geoData.locality || "Current Location";
+            const cityName = geoData.locality || geoData.city || "Current Location";
             const countryCode = geoData.countryCode;
             
             await selectCity({
@@ -1149,7 +1242,11 @@ async function getUserLocation() {
         console.error("Geolocation error:", error);
         loadingSpinner.classList.add('hidden');
         weatherMain.classList.remove('opacity-50');
-        showError("Unable to retrieve your location. Please check permissions.");
+        if (isAutoInit) {
+            initializeDashboard();
+        } else {
+            showError("Unable to retrieve your location. Please check permissions.");
+        }
     });
 }
 
@@ -1193,6 +1290,7 @@ async function selectCity(city) {
         iframe.src = newSrc;
     }
     
+    saveSettings();
     await initializeDashboard();
     
     // Clear input
@@ -1277,6 +1375,8 @@ function setupCustomDropdown() {
             wrapper.classList.remove('open');
             globalTooltip.classList.remove('visible');
             
+            saveSettings();
+
             if (weatherDataCache) {
                 updateWeatherCard(weatherDataCache);
             }
