@@ -18,6 +18,14 @@ function calculateDisplayHourlyCount() {
 let currentUnit = 'C';
 let weatherDataCache = null;
 let currentModel = 'gem_seamless';
+
+function setDefaultModelByLocation() {
+    if (currentCountryCode?.toUpperCase() === 'CA') {
+        currentModel = 'gem_seamless';
+    } else {
+        currentModel = 'gfs';
+    }
+}
 let displayHourlyCount = calculateDisplayHourlyCount();
 let searchTimeout = null;
 
@@ -71,6 +79,7 @@ let currentLat = 49.2827;
 let currentLon = -123.1207;
 let currentElevation = 43;
 let currentCityName = "Vancouver";
+let currentCountryCode = "CA";
 
 // Settings Persistence
 const STORAGE_KEY = 'weather_settings';
@@ -78,11 +87,11 @@ const STORAGE_KEY = 'weather_settings';
 function saveSettings() {
     const settings = {
         unit: currentUnit,
-        model: currentModel,
         lat: currentLat,
         lon: currentLon,
         elevation: currentElevation,
-        cityName: currentCityName
+        cityName: currentCityName,
+        countryCode: currentCountryCode
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 }
@@ -95,15 +104,16 @@ function loadSettings() {
         if (saved) {
             const s = JSON.parse(saved);
             if (s.unit) currentUnit = s.unit;
-            if (s.model) currentModel = s.model;
             if (s.lat !== undefined && s.cityName) {
                 currentLat = s.lat;
                 currentLon = s.lon;
                 if (s.elevation !== undefined) currentElevation = s.elevation;
                 currentCityName = s.cityName;
+                currentCountryCode = s.countryCode || null;
                 hasSavedLocation = true;
             }
         }
+        setDefaultModelByLocation();
     } catch (e) {
         console.error('Error loading settings:', e);
     }
@@ -1070,18 +1080,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btnC.className = 'px-3 py-1 text-xs font-bold text-outline hover:text-primary transition-colors';
         }
     }
-    const label = document.getElementById('model-select-label');
-    const options = document.querySelectorAll('.custom-option');
-    if (label && options.length > 0) {
-        options.forEach(opt => {
-            if (opt.getAttribute('data-value') === currentModel) {
-                opt.classList.add('selected');
-                label.textContent = opt.querySelector('span').textContent;
-            } else {
-                opt.classList.remove('selected');
-            }
-        });
-    }
     const cityNameEl = document.getElementById('city-name-header');
     if (cityNameEl && currentCityName !== "Vancouver") {
         cityNameEl.innerHTML = `${currentCityName} <span id="city-flag-header" class="flex items-center"></span>`;
@@ -1329,6 +1327,7 @@ async function selectCity(city) {
     currentLon = city.longitude;
     currentElevation = city.elevation || 10;
     currentCityName = city.name;
+    currentCountryCode = city.country_code || null;
     
     const stationIdEl = document.getElementById('station-id-display');
     if (stationIdEl && city.id) {
@@ -1365,11 +1364,7 @@ async function selectCity(city) {
     }
     
     // Set default model based on location: Canada -> GEM Seamless, Else -> GFS
-    if (city.country_code?.toUpperCase() === 'CA') {
-        currentModel = 'gem_seamless';
-    } else {
-        currentModel = 'gfs';
-    }
+    setDefaultModelByLocation();
     syncModelUI();
 
     saveSettings();
