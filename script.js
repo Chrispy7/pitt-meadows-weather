@@ -1364,6 +1364,14 @@ async function selectCity(city) {
         iframe.src = newSrc;
     }
     
+    // Set default model based on location: Canada -> GEM Seamless, Else -> GFS
+    if (city.country_code?.toUpperCase() === 'CA') {
+        currentModel = 'gem_seamless';
+    } else {
+        currentModel = 'gfs';
+    }
+    syncModelUI();
+
     saveSettings();
     await initializeDashboard();
     
@@ -1399,6 +1407,22 @@ async function searchCity(cityName) {
         loadingSpinner.classList.add('hidden');
     }
 }
+function syncModelUI() {
+    const label = document.getElementById('model-select-label');
+    const options = document.querySelectorAll('.custom-option');
+    if (!label || !options.length) return;
+
+    options.forEach(option => {
+        const val = option.getAttribute('data-value');
+        if (val === currentModel) {
+            option.classList.add('selected');
+            label.textContent = option.querySelector('span').textContent;
+        } else {
+            option.classList.remove('selected');
+        }
+    });
+}
+
 function setupCustomDropdown() {
     const wrapper = document.getElementById('model-select-wrapper');
     const trigger = document.getElementById('model-select-trigger');
@@ -1456,6 +1480,9 @@ function setupCustomDropdown() {
             }
         });
     });
+
+    // Initial sync
+    syncModelUI();
 
     // Close on click outside
     document.addEventListener('click', () => {
