@@ -451,7 +451,13 @@ function renderMeteogram(data) {
         const pArr = sourceData.hourly.precipitation;
         precipitations.push(pArr ? (pArr[i] || 0) : 0);
         
-        const wCode = sourceData.hourly.weather_code ? sourceData.hourly.weather_code[i] : 0;
+        let wCode = (sourceData.hourly.weather_code && sourceData.hourly.weather_code[i] !== null) 
+            ? sourceData.hourly.weather_code[i] 
+            : (ecmwfData.hourly.weather_code ? ecmwfData.hourly.weather_code[i] : 0);
+            
+        // Final fallback if both are null
+        if (wCode === null) wCode = 0;
+
         const dailyForIcon = sourceData.daily || ecmwfData.daily;
         const iconName = getWeatherIcon(wCode, timeStr, dailyForIcon);
         
