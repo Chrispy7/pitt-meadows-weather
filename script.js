@@ -109,7 +109,7 @@ function loadSettings() {
                 currentLon = s.lon;
                 if (s.elevation !== undefined) currentElevation = s.elevation;
                 currentCityName = s.cityName;
-                currentCountryCode = s.countryCode || null;
+                if (s.countryCode) currentCountryCode = s.countryCode;
                 hasSavedLocation = true;
             }
         }
@@ -1327,7 +1327,7 @@ async function selectCity(city) {
     currentLon = city.longitude;
     currentElevation = city.elevation || 10;
     currentCityName = city.name;
-    currentCountryCode = city.country_code || null;
+    if (city.country_code) currentCountryCode = city.country_code;
     
     const stationIdEl = document.getElementById('station-id-display');
     if (stationIdEl && city.id) {
