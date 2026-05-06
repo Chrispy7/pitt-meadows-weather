@@ -255,9 +255,7 @@ function getModelData(weatherData, modelKey) {
 
     // Check if hourly data exists for this model
     if (!h || !h[`temperature_2m${suffix}`]) {
-        // Fallback to ECMWF if the requested model data is missing
-        if (modelKey !== 'ecmwf_ifs') return getModelData(weatherData, 'ecmwf_ifs');
-        return weatherData;
+        return { current: {}, hourly: { time: [], temperature_2m: [] }, daily: { time: [], temperature_2m_max: [] } };
     }
     
     return {
@@ -286,14 +284,14 @@ function getModelData(weatherData, modelKey) {
 async function getWeather() {
     const modelKeys = [
         "gem_seamless", "gem_global", "gem_regional", "gem_hrdps_continental", "gem_hrdps_west",
-        "ecmwf_ifs", "ecmwf_aifs025", "gfs_seamless",
+        "ecmwf_ifs", "ecmwf_aifs025_single", "gfs_seamless",
         "ncep_nbm_conus", "gfs_graphcast025", "ncep_aigfs025", "ncep_hgefs025_ensemble_mean",
         "ncep_hrrr_conus", "ncep_nam_conus"
     ];
     const modelsParam = modelKeys.join(",");
     
     // Core parameters for all models
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&models=${modelsParam}&timezone=auto&forecast_days=10`;
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&elevation=${currentElevation}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,visibility,surface_pressure,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&models=${modelsParam}&timezone=auto&forecast_days=16`;
     const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${currentLat}&longitude=${currentLon}&current=us_aqi&timezone=auto`;
     
     const [weatherRes, aqiRes] = await Promise.all([
@@ -313,7 +311,7 @@ async function getWeather() {
         gemHrdpsData: getModelData(weatherData, "gem_hrdps_continental"),
         gemHrdpsWestData: getModelData(weatherData, "gem_hrdps_west"),
         ecmwfData: getModelData(weatherData, "ecmwf_ifs"),
-        ecmwfAifsData: getModelData(weatherData, "ecmwf_aifs025"),
+        ecmwfAifsData: getModelData(weatherData, "ecmwf_aifs025_single"),
         gfsData: getModelData(weatherData, "gfs_seamless"),
         nbmData: getModelData(weatherData, "ncep_nbm_conus"),
         graphcastData: getModelData(weatherData, "gfs_graphcast025"),
@@ -355,7 +353,46 @@ function renderMeteogram(data) {
     const icons = [];
     const midnightIndices = []; // Track midnight positions for vertical lines
     
-    const hoursToPlot = Math.min(240, hourlyTime.length - currentHourIdx);
+    // Determine the source data for length calculation
+    let lengthSource;
+    if (currentModel === 'gem_seamless') lengthSource = gemSeamlessData;
+    else if (currentModel === 'gem_global') lengthSource = gemGlobalData;
+    else if (currentModel === 'gem_regional') lengthSource = gemRegionalData;
+    else if (currentModel === 'gem_hrdps') lengthSource = gemHrdpsData;
+    else if (currentModel === 'gem_hrdps_west') lengthSource = gemHrdpsWestData;
+    else if (currentModel === 'ecmwf') lengthSource = ecmwfData;
+    else if (currentModel === 'ecmwf_aifs') lengthSource = ecmwfAifsData;
+    else if (currentModel === 'gfs') lengthSource = gfsData;
+    else if (currentModel === 'ncep_nbm') lengthSource = nbmData;
+    else if (currentModel === 'graphcast') lengthSource = graphcastData;
+    else if (currentModel === 'ai_gfs') lengthSource = aiGfsData;
+    else if (currentModel === 'hgefs') lengthSource = hgefsData;
+    else if (currentModel === 'hrrr') lengthSource = hrrrData;
+    else if (currentModel === 'nam') lengthSource = namData;
+    else lengthSource = gemSeamlessData;
+
+    const tArrForLength = lengthSource.hourly.temperature_2m;
+    let lastValidIdx = 0;
+    if (tArrForLength) {
+        for (let i = tArrForLength.length - 1; i >= currentHourIdx; i--) {
+            if (tArrForLength[i] !== null && tArrForLength[i] !== undefined) {
+                lastValidIdx = i;
+                break;
+            }
+        }
+    }
+    const hoursToPlot = Math.max(0, lastValidIdx - currentHourIdx + 1);
+    
+    // Update the Day count in the heading
+    const dayCount = Math.ceil(hoursToPlot / 24);
+    console.log(`[DEBUG] renderMeteogram: model=${currentModel}, hoursToPlot=${hoursToPlot}, dayCount=${dayCount}`);
+    const dayCountEl = document.getElementById('meteogram-days-count');
+    if (dayCountEl) {
+        dayCountEl.textContent = dayCount;
+        console.log(`[DEBUG] Updated meteogram heading to ${dayCount}`);
+    } else {
+        console.warn(`[DEBUG] Could not find meteogram-days-count element`);
+    }
     
     for (let i = currentHourIdx; i < currentHourIdx + hoursToPlot; i++) {
         const timeStr = hourlyTime[i];
@@ -379,12 +416,12 @@ function renderMeteogram(data) {
         else {
             // Seamless: GEM for first 3 days (72h), ECMWF for the rest
             const hoursFromNow = i - currentHourIdx;
-            const useGem = hoursFromNow < 72 && i < gemData.hourly.time.length;
-            sourceData = useGem ? gemData : ecmwfData;
+            const useGem = hoursFromNow < 72 && i < gemSeamlessData.hourly.time.length;
+            sourceData = useGem ? gemSeamlessData : ecmwfData;
         }
         
-        // Fallback check: if model data ends (like HRRR), use ECMWF
-        if (!sourceData.hourly.temperature_2m[i] && i < ecmwfData.hourly.temperature_2m.length) {
+        // Fallback check: ONLY if model is gem_seamless or specifically missing data unexpectedly
+        if (currentModel === 'gem_seamless' && !sourceData.hourly.temperature_2m[i] && i < ecmwfData.hourly.temperature_2m.length) {
             sourceData = ecmwfData;
         }
         
@@ -818,13 +855,50 @@ function updateWeatherCard(data) {
     // --- Meteogram ---
     renderMeteogram(data);
 
-    // --- 10-Day Forecast ---
+    // --- Dynamic Multi-Day Forecast ---
     const tenDayContainer = document.getElementById('ten-day-forecast-container');
     if (tenDayContainer) {
         tenDayContainer.innerHTML = '';
         
-        const ecmwfDaily = ecmwfData.daily;
-        const totalDays = Math.min(ecmwfDaily.time.length, 10);
+        // Model Selection Logic for Daily Source
+        let sourceDailyObj;
+        if (currentModel === 'gem_seamless') sourceDailyObj = data.gemSeamlessData.daily;
+        else if (currentModel === 'gem_global') sourceDailyObj = data.gemGlobalData.daily;
+        else if (currentModel === 'gem_regional') sourceDailyObj = data.gemRegionalData.daily;
+        else if (currentModel === 'gem_hrdps') sourceDailyObj = data.gemHrdpsData.daily;
+        else if (currentModel === 'gem_hrdps_west') sourceDailyObj = data.gemHrdpsWestData.daily;
+        else if (currentModel === 'ecmwf') sourceDailyObj = ecmwfData.daily;
+        else if (currentModel === 'ecmwf_aifs') sourceDailyObj = data.ecmwfAifsData.daily;
+        else if (currentModel === 'gfs') sourceDailyObj = data.gfsData.daily;
+        else if (currentModel === 'ncep_nbm') sourceDailyObj = data.nbmData.daily;
+        else if (currentModel === 'graphcast') sourceDailyObj = data.graphcastData.daily;
+        else if (currentModel === 'ai_gfs') sourceDailyObj = data.aiGfsData.daily;
+        else if (currentModel === 'hgefs') sourceDailyObj = data.hgefsData.daily;
+        else if (currentModel === 'hrrr') sourceDailyObj = data.hrrrData.daily;
+        else if (currentModel === 'nam') sourceDailyObj = data.namData.daily;
+        else sourceDailyObj = data.gemSeamlessData.daily;
+
+        const dArrForLength = sourceDailyObj.temperature_2m_max;
+        let lastValidDayIdx = 0;
+        if (dArrForLength) {
+            for (let i = dArrForLength.length - 1; i >= 0; i--) {
+                if (dArrForLength[i] !== null && dArrForLength[i] !== undefined) {
+                    lastValidDayIdx = i;
+                    break;
+                }
+            }
+        }
+        const totalDays = lastValidDayIdx + 1;
+        
+        // Update the Day count in the heading
+    const forecastDayCountEl = document.getElementById('forecast-days-count');
+    console.log(`[DEBUG] updateWeatherCard: model=${currentModel}, totalDays=${totalDays}`);
+    if (forecastDayCountEl) {
+        forecastDayCountEl.textContent = totalDays;
+        console.log(`[DEBUG] Updated forecast heading to ${totalDays}`);
+    } else {
+        console.warn(`[DEBUG] Could not find forecast-days-count element`);
+    }
         
         for (let i = 0; i < totalDays; i++) {
             // Model Selection Logic for Daily Row
@@ -834,7 +908,7 @@ function updateWeatherCard(data) {
             else if (currentModel === 'gem_regional') sourceDaily = data.gemRegionalData.daily;
             else if (currentModel === 'gem_hrdps') sourceDaily = data.gemHrdpsData.daily;
             else if (currentModel === 'gem_hrdps_west') sourceDaily = data.gemHrdpsWestData.daily;
-            else if (currentModel === 'ecmwf') sourceDaily = ecmwfDaily;
+            else if (currentModel === 'ecmwf') sourceDaily = ecmwfData.daily;
             else if (currentModel === 'ecmwf_aifs') sourceDaily = data.ecmwfAifsData.daily;
             else if (currentModel === 'gfs') sourceDaily = data.gfsData.daily;
             else if (currentModel === 'ncep_nbm') sourceDaily = data.nbmData.daily;
@@ -845,12 +919,12 @@ function updateWeatherCard(data) {
             else if (currentModel === 'nam') sourceDaily = data.namData.daily;
             else {
                 // Seamless
-                sourceDaily = i < 3 ? daily : ecmwfDaily;
+                sourceDaily = i < 3 ? daily : ecmwfData.daily;
             }
             
-            // Fallback for daily (like HRRR ending early)
-            if (!sourceDaily.temperature_2m_max[i] && i < ecmwfDaily.temperature_2m_max.length) {
-                sourceDaily = ecmwfDaily;
+            // Fallback for daily: ONLY if model is gem_seamless or specifically missing data unexpectedly
+            if (currentModel === 'gem_seamless' && !sourceDaily.temperature_2m_max[i] && i < ecmwfData.daily.temperature_2m_max.length) {
+                sourceDaily = ecmwfData.daily;
             }
             
             if (i >= sourceDaily.time.length) continue;
