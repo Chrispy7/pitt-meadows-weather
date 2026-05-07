@@ -23,7 +23,7 @@ function setDefaultModelByLocation() {
     if (currentCountryCode?.toUpperCase() === 'CA') {
         currentModel = 'gem_seamless';
     } else {
-        currentModel = 'gfs';
+        currentModel = 'gfs_seamless';
     }
 }
 let displayHourlyCount = calculateDisplayHourlyCount();
@@ -294,7 +294,7 @@ function getModelData(weatherData, modelKey) {
 async function getWeather() {
     const modelKeys = [
         "gem_seamless", "gem_global", "gem_regional", "gem_hrdps_continental", "gem_hrdps_west",
-        "ecmwf_ifs", "ecmwf_aifs025_single", "gfs_seamless",
+        "ecmwf_ifs", "ecmwf_aifs025_single", "gfs_seamless", "gfs_global",
         "ncep_nbm_conus", "gfs_graphcast025", "ncep_aigfs025", "ncep_hgefs025_ensemble_mean",
         "ncep_hrrr_conus", "ncep_nam_conus"
     ];
@@ -323,6 +323,7 @@ async function getWeather() {
         ecmwfData: getModelData(weatherData, "ecmwf_ifs"),
         ecmwfAifsData: getModelData(weatherData, "ecmwf_aifs025_single"),
         gfsData: getModelData(weatherData, "gfs_seamless"),
+        gfsGlobalData: getModelData(weatherData, "gfs_global"),
         nbmData: getModelData(weatherData, "ncep_nbm_conus"),
         graphcastData: getModelData(weatherData, "gfs_graphcast025"),
         aiGfsData: getModelData(weatherData, "ncep_aigfs025"),
@@ -338,7 +339,7 @@ let meteogramChartInstance = null;
 function renderMeteogram(data) {
     const { 
         gemSeamlessData, gemGlobalData, gemRegionalData, gemHrdpsData, gemHrdpsWestData, 
-        ecmwfData, ecmwfAifsData, gfsData, 
+        ecmwfData, ecmwfAifsData, gfsData, gfsGlobalData,
         nbmData, graphcastData, aiGfsData, hgefsData,
         hrrrData, namData 
     } = data;
@@ -372,7 +373,8 @@ function renderMeteogram(data) {
     else if (currentModel === 'gem_hrdps_west') lengthSource = gemHrdpsWestData;
     else if (currentModel === 'ecmwf') lengthSource = ecmwfData;
     else if (currentModel === 'ecmwf_aifs') lengthSource = ecmwfAifsData;
-    else if (currentModel === 'gfs') lengthSource = gfsData;
+    else if (currentModel === 'gfs_seamless') lengthSource = gfsData;
+    else if (currentModel === 'gfs_global') lengthSource = gfsGlobalData;
     else if (currentModel === 'ncep_nbm') lengthSource = nbmData;
     else if (currentModel === 'graphcast') lengthSource = graphcastData;
     else if (currentModel === 'ai_gfs') lengthSource = aiGfsData;
@@ -416,7 +418,8 @@ function renderMeteogram(data) {
         else if (currentModel === 'gem_hrdps_west') sourceData = gemHrdpsWestData;
         else if (currentModel === 'ecmwf') sourceData = ecmwfData;
         else if (currentModel === 'ecmwf_aifs') sourceData = ecmwfAifsData;
-        else if (currentModel === 'gfs') sourceData = gfsData;
+        else if (currentModel === 'gfs_seamless') sourceData = gfsData;
+        else if (currentModel === 'gfs_global') sourceData = gfsGlobalData;
         else if (currentModel === 'ncep_nbm') sourceData = nbmData;
         else if (currentModel === 'graphcast') sourceData = graphcastData;
         else if (currentModel === 'ai_gfs') sourceData = aiGfsData;
@@ -645,7 +648,8 @@ function updateWeatherCard(data) {
     else if (currentModel === 'gem_hrdps_west') selectedData = data.gemHrdpsWestData;
     else if (currentModel === 'ecmwf') selectedData = data.ecmwfData;
     else if (currentModel === 'ecmwf_aifs') selectedData = data.ecmwfAifsData;
-    else if (currentModel === 'gfs') selectedData = data.gfsData;
+    else if (currentModel === 'gfs_seamless') selectedData = data.gfsData;
+    else if (currentModel === 'gfs_global') selectedData = data.gfsGlobalData;
     else if (currentModel === 'ncep_nbm') selectedData = data.nbmData;
     else if (currentModel === 'graphcast') selectedData = data.graphcastData;
     else if (currentModel === 'ai_gfs') selectedData = data.aiGfsData;
@@ -873,7 +877,8 @@ function updateWeatherCard(data) {
         else if (currentModel === 'gem_hrdps_west') sourceDailyObj = data.gemHrdpsWestData.daily;
         else if (currentModel === 'ecmwf') sourceDailyObj = ecmwfData.daily;
         else if (currentModel === 'ecmwf_aifs') sourceDailyObj = data.ecmwfAifsData.daily;
-        else if (currentModel === 'gfs') sourceDailyObj = data.gfsData.daily;
+        else if (currentModel === 'gfs_seamless') sourceDailyObj = data.gfsData.daily;
+        else if (currentModel === 'gfs_global') sourceDailyObj = data.gfsGlobalData.daily;
         else if (currentModel === 'ncep_nbm') sourceDailyObj = data.nbmData.daily;
         else if (currentModel === 'graphcast') sourceDailyObj = data.graphcastData.daily;
         else if (currentModel === 'ai_gfs') sourceDailyObj = data.aiGfsData.daily;
@@ -914,7 +919,8 @@ function updateWeatherCard(data) {
             else if (currentModel === 'gem_hrdps_west') sourceDaily = data.gemHrdpsWestData.daily;
             else if (currentModel === 'ecmwf') sourceDaily = ecmwfData.daily;
             else if (currentModel === 'ecmwf_aifs') sourceDaily = data.ecmwfAifsData.daily;
-            else if (currentModel === 'gfs') sourceDaily = data.gfsData.daily;
+            else if (currentModel === 'gfs_seamless') sourceDaily = data.gfsData.daily;
+            else if (currentModel === 'gfs_global') sourceDaily = data.gfsGlobalData.daily;
             else if (currentModel === 'ncep_nbm') sourceDaily = data.nbmData.daily;
             else if (currentModel === 'graphcast') sourceDaily = data.graphcastData.daily;
             else if (currentModel === 'ai_gfs') sourceDaily = data.aiGfsData.daily;
@@ -957,7 +963,8 @@ function updateWeatherCard(data) {
             else if (currentModel === 'gem_hrdps_west') sourceHourly = data.gemHrdpsWestData.hourly;
             else if (currentModel === 'ecmwf') sourceHourly = ecmwfData.hourly;
             else if (currentModel === 'ecmwf_aifs') sourceHourly = data.ecmwfAifsData.hourly;
-            else if (currentModel === 'gfs') sourceHourly = data.gfsData.hourly;
+            else if (currentModel === 'gfs_seamless') sourceHourly = data.gfsData.hourly;
+            else if (currentModel === 'gfs_global') sourceHourly = data.gfsGlobalData.hourly;
             else if (currentModel === 'ncep_nbm') sourceHourly = data.nbmData.hourly;
             else if (currentModel === 'graphcast') sourceHourly = data.graphcastData.hourly;
             else if (currentModel === 'ai_gfs') sourceHourly = data.aiGfsData.hourly;
@@ -1337,7 +1344,7 @@ async function selectCity(city) {
         iframe.src = newSrc;
     }
     
-    // Set default model based on location: Canada -> GEM Seamless, Else -> GFS
+    // Set default model based on location: Canada -> GEM Seamless, Else -> GFS Seamless
     setDefaultModelByLocation();
     syncModelUI();
 
